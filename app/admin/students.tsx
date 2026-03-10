@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { PageHeader } from '../../components/PageHeader';
 import { Screen } from '../../components/Screen';
 import { colors, radii, spacing, typography } from '../../constants/theme';
 
@@ -27,15 +28,11 @@ export default function AdminStudentsScreen() {
 
     return (
         <Screen scrollable={true}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color={colors.text} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Student Management</Text>
-                <TouchableOpacity onPress={() => alert('Add New Student Data')} style={styles.addButton}>
-                    <Ionicons name="add" size={24} color={colors.text} />
-                </TouchableOpacity>
-            </View>
+            <PageHeader
+                title="Student Management"
+                rightIcon="add"
+                onRightPress={() => alert('Add New Student Data')}
+            />
 
             <View style={styles.listContainer}>
                 <StudentItem name="Jane Smith" nim="105021001" major="Computer Science" />
@@ -47,11 +44,6 @@ export default function AdminStudentsScreen() {
 }
 
 const styles = StyleSheet.create({
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.lg, paddingTop: spacing.sm },
-    backButton: { padding: spacing.xs },
-    addButton: { padding: spacing.xs, backgroundColor: colors.card, borderRadius: radii.pill },
-    headerTitle: { fontSize: typography.subtitle, fontWeight: '700', color: colors.text },
-    scrollContent: { paddingBottom: spacing.xxl },
     listContainer: { paddingBottom: spacing.xxl },
     card: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card, padding: spacing.md, borderRadius: radii.lg, marginBottom: spacing.md, borderWidth: 1, borderColor: colors.border },
     infoContainer: { flex: 1 },

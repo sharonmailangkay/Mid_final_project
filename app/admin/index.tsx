@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Screen } from '../../components/Screen';
@@ -34,18 +35,29 @@ export default function AdminLoginScreen() {
 
     return (
         <Screen>
+            <Stack.Screen options={{ headerShown: false }} />
+
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
             >
-                <ScrollView contentContainerStyle={styles.container}>
+                <ScrollView
+                    contentContainerStyle={styles.scrollContainer}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
 
                     <View style={styles.header}>
-                        <View style={styles.iconContainer}>
-                            <Ionicons name="shield-checkmark" size={48} color={colors.primarySoft} />
-                        </View>
+                        <LinearGradient
+                            colors={['#4F46E5', '#10B981']}
+                            style={styles.logoGradient}
+                        >
+                            <Ionicons name="shield-checkmark" size={40} color="#FFFFFF" />
+                        </LinearGradient>
                         <Text style={styles.title}>Admin Portal</Text>
-                        <Text style={styles.subtitle}>Sign in to manage the university system</Text>
+                        <View style={styles.accentBar} />
+                        <Text style={styles.subtitle}>Secure Access Control</Text>
                     </View>
 
                     <View style={styles.formContainer}>
@@ -64,6 +76,8 @@ export default function AdminLoginScreen() {
                             placeholder="Enter admin username"
                             placeholderTextColor={colors.textSecondary}
                             autoCapitalize="none"
+                            autoCorrect={false}
+                            returnKeyType="next"
                         />
 
                         <Text style={styles.label}>Password</Text>
@@ -74,6 +88,8 @@ export default function AdminLoginScreen() {
                             placeholder="Enter password"
                             placeholderTextColor={colors.textSecondary}
                             secureTextEntry
+                            returnKeyType="done"
+                            onSubmitEditing={handleLogin}
                         />
 
                         <TouchableOpacity
@@ -102,35 +118,55 @@ export default function AdminLoginScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: {
+    scrollContainer: {
         flexGrow: 1,
-        justifyContent: 'center',
+        justifyContent: 'center', // Tetap center untuk tampilan awal yang rapi
         paddingVertical: spacing.xxl,
+        paddingHorizontal: spacing.md,
     },
     header: {
         alignItems: 'center',
-        marginBottom: spacing.xxl,
+        marginBottom: spacing.xl,
     },
-    iconContainer: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: colors.primaryMuted + '40',
+    logoGradient: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: spacing.md,
-        borderWidth: 1,
-        borderColor: colors.primarySoft,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#4F46E5',
+                shadowOffset: { width: 0, height: 10 },
+                shadowOpacity: 0.3,
+                shadowRadius: 15,
+            },
+            android: {
+                elevation: 10,
+            },
+        }),
     },
     title: {
         fontSize: typography.title,
-        fontWeight: '800',
+        fontWeight: '900',
         color: colors.text,
-        marginBottom: 8,
+        marginBottom: 4,
+    },
+    accentBar: {
+        width: 40,
+        height: 5,
+        backgroundColor: colors.accent,
+        borderRadius: radii.pill,
+        marginBottom: spacing.md,
     },
     subtitle: {
         fontSize: typography.body,
         color: colors.textSecondary,
+        textAlign: 'center',
+        fontWeight: '600',
+        letterSpacing: 1,
+        textTransform: 'uppercase',
     },
     formContainer: {
         backgroundColor: colors.card,
@@ -138,6 +174,7 @@ const styles = StyleSheet.create({
         borderRadius: radii.xl,
         borderWidth: 1,
         borderColor: colors.border,
+        width: '100%',
     },
     errorBox: {
         flexDirection: 'row',

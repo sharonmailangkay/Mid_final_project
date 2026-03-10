@@ -4,7 +4,7 @@ import { ConsultationProvider } from "../context/ConsultationContext";
 export default function RootLayout() {
   return (
     <ConsultationProvider>
-      <Stack />
+      <Stack screenOptions={{ headerShown: false }} />
     </ConsultationProvider>
   );
 }

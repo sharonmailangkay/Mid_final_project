@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Card } from '../../components/Card';
+import { PageHeader } from '../../components/PageHeader';
 import { Screen } from '../../components/Screen';
 import { colors, radii, spacing, typography } from '../../constants/theme';
 
@@ -28,130 +29,128 @@ export default function AdminDashboardScreen() {
 
     return (
         <Screen scrollable={true}>
-            {/* Header Section */}
-            <View style={styles.header}>
-                <View style={styles.iconContainer}>
-                    <Ionicons name="shield-checkmark" size={40} color={colors.primarySoft} />
-                </View>
-                <Text style={styles.title}>Admin Dashboard</Text>
-                <Text style={styles.subtitle}>Welcome, Administrator</Text>
-            </View>
+            <PageHeader
+                title="Admin Dashboard"
+                subtitle="Welcome back, Administrator"
+                showBack={false}
+                rightIcon="notifications-outline"
+                onRightPress={() => alert('No new notifications')}
+            />
 
             {/* Management Features */}
-            <Text style={styles.sectionTitle}>Management Menu</Text>
+            <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Management Menu</Text>
+                <View style={styles.badge}>
+                    <Text style={styles.badgeText}>6 Modules</Text>
+                </View>
+            </View>
 
-            <MenuCard
-                title="Manage PMB"
-                desc="View applicants, verify documents, generate NIM."
-                icon="people-circle"
-                color={colors.accent}
-                route="/admin/pmb"
-            />
+            <View style={styles.menuGrid}>
+                <MenuCard
+                    title="Manage PMB"
+                    desc="New student registration & verification"
+                    icon="people-circle"
+                    color={colors.accent}
+                    route="/admin/pmb"
+                />
 
-            <MenuCard
-                title="Student Management"
-                desc="View, add, update, or delete student data."
-                icon="school"
-                color="#3B82F6"
-                route="/admin/students"
-            />
+                <MenuCard
+                    title="Student Data"
+                    desc="Complete student records database"
+                    icon="school"
+                    color="#3B82F6"
+                    route="/admin/students"
+                />
 
-            <MenuCard
-                title="Course Management"
-                desc="Add courses, edit details, assign lecturers."
-                icon="book"
-                color="#10B981"
-                route="/admin/courses"
-            />
+                <MenuCard
+                    title="Courses"
+                    desc="Academic courses & lecturer assignment"
+                    icon="book"
+                    color="#10B981"
+                    route="/admin/courses"
+                />
 
-            <MenuCard
-                title="Academic Schedule"
-                desc="Create schedules, assign classrooms and time."
-                icon="calendar"
-                color="#F59E0B"
-                route="/admin/schedules"
-            />
+                <MenuCard
+                    title="Schedule"
+                    desc="Manage time & classroom allocation"
+                    icon="calendar"
+                    color="#F59E0B"
+                    route="/admin/schedules"
+                />
 
-            <MenuCard
-                title="Grade Management"
-                desc="Update course grades, calculate GPA."
-                icon="stats-chart"
-                color="#8B5CF6"
-                route="/admin/grades"
-            />
+                <MenuCard
+                    title="Grades"
+                    desc="Transcript & GPA calculation system"
+                    icon="stats-chart"
+                    color="#8B5CF6"
+                    route="/admin/grades"
+                />
 
-            <MenuCard
-                title="Consultation Management"
-                desc="Assign & update student consultation requests."
-                icon="chatbubbles"
-                color="#EC4899"
-                route="/admin/consultations"
-            />
+                <MenuCard
+                    title="Consultations"
+                    desc="Student academic request management"
+                    icon="chatbubbles"
+                    color="#EC4899"
+                    route="/admin/consultations"
+                />
+            </View>
 
-            {/* Back Button */}
+            {/* Logout Button */}
             <TouchableOpacity
                 style={styles.logoutButton}
                 onPress={() => router.replace('/admin')}
             >
                 <Ionicons name="log-out-outline" size={20} color={colors.danger} />
-                <Text style={styles.logoutButtonText}>Log Out</Text>
+                <Text style={styles.logoutButtonText}>Secure Log Out</Text>
             </TouchableOpacity>
         </Screen>
     );
 }
 
 const styles = StyleSheet.create({
-    scrollContent: {
-        paddingBottom: spacing.xl,
-        paddingTop: spacing.lg,
-    },
-    header: {
+    sectionHeader: {
+        flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: spacing.xl,
-    },
-    iconContainer: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: colors.card,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: spacing.md,
-        borderWidth: 2,
-        borderColor: '#10B981',
-    },
-    title: {
-        fontSize: typography.title,
-        fontWeight: '800',
-        color: colors.text,
-        textAlign: 'center',
-        marginBottom: 4,
-    },
-    subtitle: {
-        fontSize: typography.body,
-        fontWeight: '600',
-        color: colors.textSecondary,
-        textAlign: 'center',
+        justifyContent: 'space-between',
+        marginBottom: spacing.lg,
     },
     sectionTitle: {
         fontSize: typography.subtitle,
-        fontWeight: '700',
+        fontWeight: '800',
         color: colors.text,
-        marginBottom: spacing.md,
+    },
+    badge: {
+        backgroundColor: colors.primaryMuted,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: radii.pill,
+        borderWidth: 1,
+        borderColor: colors.primarySoft + '30',
+    },
+    badgeText: {
+        fontSize: 10,
+        fontWeight: '700',
+        color: colors.primarySoft,
+    },
+    menuGrid: {
+        gap: spacing.sm,
     },
     menuItem: {
-        marginBottom: spacing.sm,
+        marginBottom: spacing.xs,
     },
     card: {
         padding: spacing.md,
+        backgroundColor: colors.card,
+        borderWidth: 1,
+        borderColor: colors.border,
     },
     cardHeader: {
         flexDirection: 'row',
         alignItems: 'center',
     },
     cardIconBox: {
-        width: 48,
-        height: 48,
+        width: 44,
+        height: 44,
         borderRadius: radii.md,
         justifyContent: 'center',
         alignItems: 'center',
@@ -159,28 +158,29 @@ const styles = StyleSheet.create({
     },
     cardTextContainer: {
         flex: 1,
-        paddingRight: spacing.sm,
     },
     cardTitle: {
         fontSize: typography.body,
         fontWeight: '700',
         color: colors.text,
-        marginBottom: 4,
+        marginBottom: 2,
     },
     cardDesc: {
-        fontSize: 12,
+        fontSize: 11,
         color: colors.textSecondary,
-        lineHeight: 18,
     },
     logoutButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: spacing.lg,
-        marginTop: spacing.xl,
+        marginTop: spacing.xxl,
+        marginBottom: spacing.xl,
         gap: spacing.sm,
-        backgroundColor: colors.danger + '15',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
         borderRadius: radii.lg,
+        borderWidth: 1,
+        borderColor: 'rgba(239, 68, 68, 0.2)',
     },
     logoutButtonText: {
         color: colors.danger,

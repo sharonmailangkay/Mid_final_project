@@ -24,7 +24,7 @@ export default function PortalGateway() {
       <View style={styles.blob1} />
       <View style={styles.blob2} />
 
-      <Screen containerStyle={styles.screen} scrollable={true}>
+      <Screen style={styles.screen}>
         <View style={styles.content}>
           <View style={styles.header}>
             <View style={styles.logoContainer}>

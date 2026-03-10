@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { PageHeader } from '../../components/PageHeader';
 import { Screen } from '../../components/Screen';
 import { colors, radii, spacing, typography } from '../../constants/theme';
 
@@ -37,34 +38,24 @@ export default function AdminCoursesScreen() {
     );
 
     return (
-        <Screen>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color={colors.text} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Course Management</Text>
-                <TouchableOpacity onPress={() => alert('Add New Course')} style={styles.addButton}>
-                    <Ionicons name="add" size={24} color={colors.text} />
-                </TouchableOpacity>
-            </View>
+        <Screen scrollable={true}>
+            <PageHeader
+                title="Course Management"
+                rightIcon="add"
+                onRightPress={() => alert('Add New Course')}
+            />
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-
+            <View style={styles.listContainer}>
                 <CourseItem code="IF101" name="Pemrograman Dasar" sks="3" lecturer="Dr. Alan Turing" />
                 <CourseItem code="IF202" name="Struktur Data" sks="3" lecturer="Grace Hopper, M.Kom" />
                 <CourseItem code="IF303" name="Mobile App Development" sks="4" lecturer="Unassigned" />
-
-            </ScrollView>
+            </View>
         </Screen>
     );
 }
 
 const styles = StyleSheet.create({
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.lg, paddingTop: spacing.sm },
-    backButton: { padding: spacing.xs },
-    addButton: { padding: spacing.xs, backgroundColor: colors.card, borderRadius: radii.full },
-    headerTitle: { fontSize: typography.subtitle, fontWeight: '700', color: colors.text },
-    scrollContent: { paddingBottom: spacing.xxl },
+    listContainer: { paddingBottom: spacing.xxl },
     card: { backgroundColor: colors.card, padding: spacing.md, borderRadius: radii.lg, marginBottom: spacing.md, borderWidth: 1, borderColor: colors.border },
     cardHeader: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },
     badge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: radii.sm },
