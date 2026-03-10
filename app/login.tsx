@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+    Image,
     KeyboardAvoidingView,
     Platform,
     StyleSheet,
@@ -45,8 +46,12 @@ export default function LoginScreen() {
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
             >
                 <View style={styles.headerContainer}>
-                    <View style={styles.logoCircle}>
-                        <Ionicons name="school" size={32} color={colors.primarySoft} />
+                    <View style={styles.logoContainer}>
+                        <Image
+                            source={require("../assets/images/unklab.png")}
+                            style={styles.logoImage}
+                            resizeMode="contain"
+                        />
                     </View>
                     <Text style={styles.title}>Campus Academic Portal</Text>
                     <Text style={styles.subtitle}>
@@ -130,15 +135,16 @@ const styles = StyleSheet.create({
     },
     headerContainer: {
         marginBottom: spacing.xl,
-    },
-    logoCircle: {
-        width: 60,
-        height: 60,
-        borderRadius: radii.pill,
-        backgroundColor: colors.primaryMuted,
         alignItems: "center",
-        justifyContent: "center",
+    },
+    logoContainer: {
+        width: 100,
+        height: 100,
         marginBottom: spacing.md,
+    },
+    logoImage: {
+        width: "100%",
+        height: "100%",
     },
     title: {
         color: colors.text,

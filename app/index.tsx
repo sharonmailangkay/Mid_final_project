@@ -29,13 +29,13 @@ export default function PortalGateway() {
           <View style={styles.header}>
             <View style={styles.logoContainer}>
               <Image
-                source={require('../assets/images/icon.png')}
+                source={require('../assets/images/unklab.png')}
                 style={styles.logo}
                 resizeMode="contain"
               />
             </View>
-            <Text style={styles.title}>UNNEX</Text>
-            <Text style={styles.subtitle}>Unklab Nexus Academic System</Text>
+            <Text style={styles.title}>SIS</Text>
+            <Text style={styles.subtitle}>Student Information System</Text>
             <Text style={styles.tagline}>Masa depan pendidikan dimulai di sini.</Text>
           </View>
 
