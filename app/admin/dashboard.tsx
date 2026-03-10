@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Card } from '../../components/Card';
 import { Screen } from '../../components/Screen';
 import { colors, radii, spacing, typography } from '../../constants/theme';
@@ -27,79 +27,75 @@ export default function AdminDashboardScreen() {
     );
 
     return (
-        <Screen>
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-
-                {/* Header Section */}
-                <View style={styles.header}>
-                    <View style={styles.iconContainer}>
-                        <Ionicons name="shield-checkmark" size={40} color={colors.primarySoft} />
-                    </View>
-                    <Text style={styles.title}>Admin Dashboard</Text>
-                    <Text style={styles.subtitle}>Welcome, Administrator</Text>
+        <Screen scrollable={true}>
+            {/* Header Section */}
+            <View style={styles.header}>
+                <View style={styles.iconContainer}>
+                    <Ionicons name="shield-checkmark" size={40} color={colors.primarySoft} />
                 </View>
+                <Text style={styles.title}>Admin Dashboard</Text>
+                <Text style={styles.subtitle}>Welcome, Administrator</Text>
+            </View>
 
-                {/* Management Features */}
-                <Text style={styles.sectionTitle}>Management Menu</Text>
+            {/* Management Features */}
+            <Text style={styles.sectionTitle}>Management Menu</Text>
 
-                <MenuCard
-                    title="Manage PMB"
-                    desc="View applicants, verify documents, generate NIM."
-                    icon="people-circle"
-                    color={colors.accent}
-                    route="/admin/pmb"
-                />
+            <MenuCard
+                title="Manage PMB"
+                desc="View applicants, verify documents, generate NIM."
+                icon="people-circle"
+                color={colors.accent}
+                route="/admin/pmb"
+            />
 
-                <MenuCard
-                    title="Student Management"
-                    desc="View, add, update, or delete student data."
-                    icon="school"
-                    color="#3B82F6"
-                    route="/admin/students"
-                />
+            <MenuCard
+                title="Student Management"
+                desc="View, add, update, or delete student data."
+                icon="school"
+                color="#3B82F6"
+                route="/admin/students"
+            />
 
-                <MenuCard
-                    title="Course Management"
-                    desc="Add courses, edit details, assign lecturers."
-                    icon="book"
-                    color="#10B981"
-                    route="/admin/courses"
-                />
+            <MenuCard
+                title="Course Management"
+                desc="Add courses, edit details, assign lecturers."
+                icon="book"
+                color="#10B981"
+                route="/admin/courses"
+            />
 
-                <MenuCard
-                    title="Academic Schedule"
-                    desc="Create schedules, assign classrooms and time."
-                    icon="calendar"
-                    color="#F59E0B"
-                    route="/admin/schedules"
-                />
+            <MenuCard
+                title="Academic Schedule"
+                desc="Create schedules, assign classrooms and time."
+                icon="calendar"
+                color="#F59E0B"
+                route="/admin/schedules"
+            />
 
-                <MenuCard
-                    title="Grade Management"
-                    desc="Update course grades, calculate GPA."
-                    icon="stats-chart"
-                    color="#8B5CF6"
-                    route="/admin/grades"
-                />
+            <MenuCard
+                title="Grade Management"
+                desc="Update course grades, calculate GPA."
+                icon="stats-chart"
+                color="#8B5CF6"
+                route="/admin/grades"
+            />
 
-                <MenuCard
-                    title="Consultation Management"
-                    desc="Assign & update student consultation requests."
-                    icon="chatbubbles"
-                    color="#EC4899"
-                    route="/admin/consultations"
-                />
+            <MenuCard
+                title="Consultation Management"
+                desc="Assign & update student consultation requests."
+                icon="chatbubbles"
+                color="#EC4899"
+                route="/admin/consultations"
+            />
 
-                {/* Back Button */}
-                <TouchableOpacity
-                    style={styles.logoutButton}
-                    onPress={() => router.replace('/admin')}
-                >
-                    <Ionicons name="log-out-outline" size={20} color={colors.danger} />
-                    <Text style={styles.logoutButtonText}>Log Out</Text>
-                </TouchableOpacity>
-
-            </ScrollView>
+            {/* Back Button */}
+            <TouchableOpacity
+                style={styles.logoutButton}
+                onPress={() => router.replace('/admin')}
+            >
+                <Ionicons name="log-out-outline" size={20} color={colors.danger} />
+                <Text style={styles.logoutButtonText}>Log Out</Text>
+            </TouchableOpacity>
         </Screen>
     );
 }

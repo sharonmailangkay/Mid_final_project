@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Screen } from '../../components/Screen';
 import { colors, radii, spacing, typography } from '../../constants/theme';
 
@@ -43,7 +43,7 @@ export default function AdminConsultationsScreen() {
     );
 
     return (
-        <Screen>
+        <Screen scrollable={true}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={colors.text} />
@@ -52,13 +52,11 @@ export default function AdminConsultationsScreen() {
                 <View style={{ width: 24 }} />
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-
+            <View style={styles.listContainer}>
                 <RequestCard name="Jane Smith" topic="Thesis Approval" date="12 Oct 2026" status="Pending" assignee={null} />
                 <RequestCard name="Michael Scott" topic="Course Selection" date="11 Oct 2026" status="Assigned" assignee="Dr. Alan Turing" />
                 <RequestCard name="Dwight Schrute" topic="Internship" date="10 Oct 2026" status="Assigned" assignee="Dean of Faculty" />
-
-            </ScrollView>
+            </View>
         </Screen>
     );
 }
@@ -68,6 +66,7 @@ const styles = StyleSheet.create({
     backButton: { padding: spacing.xs },
     headerTitle: { fontSize: typography.subtitle, fontWeight: '700', color: colors.text },
     scrollContent: { paddingBottom: spacing.xxl },
+    listContainer: { paddingBottom: spacing.xxl },
     card: { backgroundColor: colors.card, padding: spacing.md, borderRadius: radii.lg, marginBottom: spacing.md, borderWidth: 1, borderColor: colors.border },
     cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.sm },
     name: { fontSize: typography.body, fontWeight: '700', color: colors.text, marginBottom: 2 },

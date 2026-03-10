@@ -1,6 +1,7 @@
 import React from "react";
 import {
   SafeAreaView,
+  ScrollView,
   StatusBar,
   StyleSheet,
   View,
@@ -11,14 +12,26 @@ import { colors, spacing } from "../constants/theme";
 type ScreenProps = {
   children: React.ReactNode;
   style?: ViewStyle;
+  containerStyle?: ViewStyle;
+  scrollable?: boolean;
 };
 
-export const Screen: React.FC<ScreenProps> = ({ children, style }) => {
+export const Screen: React.FC<ScreenProps> = ({ children, style, containerStyle, scrollable = false }) => {
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, containerStyle]}>
       <StatusBar barStyle="light-content" />
       <SafeAreaView style={styles.safeArea}>
-        <View style={[styles.content, style]}>{children}</View>
+        {scrollable ? (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+            bounces={true}
+          >
+            <View style={[styles.content, style]}>{children}</View>
+          </ScrollView>
+        ) : (
+          <View style={[styles.content, styles.flex, style]}>{children}</View>
+        )}
       </SafeAreaView>
     </View>
   );
@@ -32,11 +45,16 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  content: {
+  flex: {
     flex: 1,
+  },
+  content: {
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.xl,
     paddingBottom: spacing.lg,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
 });
 

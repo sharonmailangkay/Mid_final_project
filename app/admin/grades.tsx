@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Screen } from '../../components/Screen';
 import { colors, radii, spacing, typography } from '../../constants/theme';
 
@@ -27,7 +27,7 @@ export default function AdminGradesScreen() {
     );
 
     return (
-        <Screen>
+        <Screen scrollable={true}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={colors.text} />
@@ -38,13 +38,11 @@ export default function AdminGradesScreen() {
                 </TouchableOpacity>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-
+            <View style={styles.listContainer}>
                 <StudentGradeItem name="Jane Smith" nim="105021001" course="Pemrograman Dasar" grade="A" />
                 <StudentGradeItem name="Michael Scott" nim="105021002" course="Struktur Data" grade="B+" />
                 <StudentGradeItem name="Dwight Schrute" nim="105021003" course="Mobile App" grade="-" />
-
-            </ScrollView>
+            </View>
         </Screen>
     );
 }
@@ -52,9 +50,10 @@ export default function AdminGradesScreen() {
 const styles = StyleSheet.create({
     header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.lg, paddingTop: spacing.sm },
     backButton: { padding: spacing.xs },
-    addButton: { padding: spacing.sm, backgroundColor: colors.card, borderRadius: radii.full },
+    addButton: { padding: spacing.sm, backgroundColor: colors.card, borderRadius: radii.pill },
     headerTitle: { fontSize: typography.subtitle, fontWeight: '700', color: colors.text },
     scrollContent: { paddingBottom: spacing.xxl },
+    listContainer: { paddingBottom: spacing.xxl },
     card: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card, padding: spacing.md, borderRadius: radii.lg, marginBottom: spacing.md, borderWidth: 1, borderColor: colors.border },
     infoContainer: { flex: 1 },
     name: { fontSize: typography.body, fontWeight: '700', color: colors.text },

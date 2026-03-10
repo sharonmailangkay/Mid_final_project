@@ -13,7 +13,7 @@ export default function DashboardScreen() {
   const { student, gpa } = useStudentData();
 
   return (
-    <Screen>
+    <Screen scrollable={true}>
       <View style={styles.header}>
         <Text style={styles.greeting}>Welcome back,</Text>
         <Text style={styles.name}>{student.name}</Text>

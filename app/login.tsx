@@ -38,7 +38,7 @@ export default function LoginScreen() {
     };
 
     return (
-        <Screen>
+        <Screen scrollable={true}>
             <KeyboardAvoidingView
                 style={styles.flex}
                 behavior={Platform.OS === "ios" ? "padding" : undefined}

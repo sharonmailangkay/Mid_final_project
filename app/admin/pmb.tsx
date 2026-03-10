@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Screen } from '../../components/Screen';
 import { colors, radii, spacing, typography } from '../../constants/theme';
 
@@ -43,7 +43,7 @@ export default function AdminPMBScreen() {
     );
 
     return (
-        <Screen>
+        <Screen scrollable={true}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={colors.text} />
@@ -52,25 +52,23 @@ export default function AdminPMBScreen() {
                 <View style={{ width: 24 }} />
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-
-                <View style={styles.summaryContainer}>
-                    <View style={styles.summaryBox}>
-                        <Text style={styles.summaryCount}>42</Text>
-                        <Text style={styles.summaryLabel}>Total Applicants</Text>
-                    </View>
-                    <View style={styles.summaryBox}>
-                        <Text style={[styles.summaryCount, { color: '#F59E0B' }]}>15</Text>
-                        <Text style={styles.summaryLabel}>Pending Verify</Text>
-                    </View>
+            <View style={styles.summaryContainer}>
+                <View style={styles.summaryBox}>
+                    <Text style={styles.summaryCount}>42</Text>
+                    <Text style={styles.summaryLabel}>Total Applicants</Text>
                 </View>
+                <View style={styles.summaryBox}>
+                    <Text style={[styles.summaryCount, { color: '#F59E0B' }]}>15</Text>
+                    <Text style={styles.summaryLabel}>Pending Verify</Text>
+                </View>
+            </View>
 
-                <Text style={styles.sectionTitle}>Recent Applicants</Text>
+            <Text style={styles.sectionTitle}>Recent Applicants</Text>
+            <View style={styles.listContainer}>
                 <ApplicantCard name="John Doe" id="REG-2601" status="Pending" />
                 <ApplicantCard name="Jane Smith" id="REG-2602" status="Verified" />
                 <ApplicantCard name="Alice Johnson" id="REG-2603" status="Pending" />
-
-            </ScrollView>
+            </View>
         </Screen>
     );
 }
@@ -80,6 +78,7 @@ const styles = StyleSheet.create({ // (will inherit same standard, I will genera
     backButton: { padding: spacing.xs },
     headerTitle: { fontSize: typography.subtitle, fontWeight: '700', color: colors.text },
     scrollContent: { paddingBottom: spacing.xxl },
+    listContainer: { paddingBottom: spacing.xxl },
     summaryContainer: { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.xl },
     summaryBox: { flex: 1, backgroundColor: colors.card, padding: spacing.md, borderRadius: radii.md, alignItems: 'center', borderWidth: 1, borderColor: colors.border },
     summaryCount: { fontSize: 24, fontWeight: '800', color: colors.text, marginBottom: 4 },
