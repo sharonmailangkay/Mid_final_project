@@ -1,41 +1,69 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, ActivityIndicator, Alert } from 'react-native';
 import { PageHeader } from '../../components/PageHeader';
 import { Screen } from '../../components/Screen';
 import { colors, radii, spacing, typography } from '../../constants/theme';
-
-// Initial Mock Data
-const INITIAL_APPLICANTS = [
-    { id: 'REG-2601', name: 'John Doe', status: 'Pending', docVerified: false },
-    { id: 'REG-2602', name: 'Jane Smith', status: 'Verified', docVerified: true },
-    { id: 'REG-2603', name: 'Alice Johnson', status: 'Pending', docVerified: false },
-    { id: 'REG-2604', name: 'Bob Wilson', status: 'Verified', docVerified: true },
-];
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
 export default function AdminPMBScreen() {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
-    const [applicants, setApplicants] = useState(INITIAL_APPLICANTS);
+
+    // --- CONVEX DATA ---
+    const rawApplicants = useQuery(api.admin.getApplicants);
+    const verifyApplicant = useMutation(api.admin.verifyApplicant);
+    const addStudent = useMutation(api.admin.addStudent);
+
+    const applicants = rawApplicants || [];
 
     // Filter Logic
     const filteredApplicants = applicants.filter(app => {
         const matchesSearch = app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            app.id.toLowerCase().includes(searchQuery.toLowerCase());
+            (app._id && app._id.toString().toLowerCase().includes(searchQuery.toLowerCase()));
         const matchesFilter = filterStatus === 'All' || app.status === filterStatus;
         return matchesSearch && matchesFilter;
     });
 
-    // Action: Verify Applicant
-    const handleVerify = (id: string) => {
-        setApplicants(prev => prev.map(app =>
-            app.id === id ? { ...app, status: 'Verified', docVerified: true } : app
-        ));
+    // Action: Verify Applicant & Convert to Student
+    const handleVerify = async (applicant: any) => {
+        // Generate a simple NIM for the new student
+        const newNim = `260${Math.floor(1000 + Math.random() * 9000)}`;
+        
+        Alert.alert(
+            "Confirm Approval",
+            `Approve ${applicant.name} and assign NIM: ${newNim}?`,
+            [
+                { text: "Cancel", style: "cancel" },
+                { 
+                    text: "Approve", 
+                    onPress: async () => {
+                        try {
+                            // 1. Update applicant status in database
+                            await verifyApplicant({ id: applicant._id, nim: newNim });
+                            
+                            // 2. Add as a permanent student record
+                            await addStudent({
+                                name: applicant.name,
+                                nim: newNim,
+                                major: "Computer Science", // Default major
+                                year: new Date().getFullYear().toString()
+                            });
+
+                            Alert.alert("Success", `${applicant.name} is now a registered student!`);
+                        } catch (e) {
+                            Alert.alert("Error", "Failed to verify applicant.");
+                        }
+                    }
+                }
+            ]
+        );
     };
 
-    const ApplicantCard = ({ applicant }: { applicant: typeof INITIAL_APPLICANTS[0] }) => (
+    const ApplicantCard = ({ applicant }: { applicant: any }) => (
         <View style={styles.card}>
             <View style={styles.cardHeader}>
                 <View style={styles.avatarBox}>
@@ -43,7 +71,7 @@ export default function AdminPMBScreen() {
                 </View>
                 <View style={styles.infoContainer}>
                     <Text style={styles.name}>{applicant.name}</Text>
-                    <Text style={styles.idText}>Reg No: {applicant.id}</Text>
+                    <Text style={styles.idText}>Email: {applicant.email}</Text>
                 </View>
                 <View style={[styles.statusBadge, applicant.status === 'Verified' ? styles.statusVerified : styles.statusPending]}>
                     <Text style={[styles.statusText, applicant.status === 'Verified' ? styles.statusTextVerified : styles.statusTextPending]}>
@@ -55,16 +83,16 @@ export default function AdminPMBScreen() {
             <View style={styles.actionRow}>
                 <TouchableOpacity
                     style={styles.btnSecondary}
-                    onPress={() => alert(`Reviewing documents for ${applicant.name}...`)}
+                    onPress={() => alert(`Contact: ${applicant.phone}`)}
                 >
-                    <Ionicons name="document-text" size={16} color={colors.text} />
-                    <Text style={styles.btnText}>View Docs</Text>
+                    <Ionicons name="call" size={16} color={colors.text} />
+                    <Text style={styles.btnText}>Contact</Text>
                 </TouchableOpacity>
 
                 {applicant.status === 'Pending' ? (
                     <TouchableOpacity
                         style={[styles.btnPrimary, { backgroundColor: colors.accent }]}
-                        onPress={() => handleVerify(applicant.id)}
+                        onPress={() => handleVerify(applicant)}
                     >
                         <Ionicons name="checkmark-circle" size={16} color={colors.text} />
                         <Text style={styles.btnText}>Approve</Text>
@@ -72,7 +100,7 @@ export default function AdminPMBScreen() {
                 ) : (
                     <View style={styles.approvedBadge}>
                         <Ionicons name="shield-checkmark" size={16} color={colors.accent} />
-                        <Text style={styles.approvedText}>Verified</Text>
+                        <Text style={styles.approvedText}>NIM: {applicant.nim}</Text>
                     </View>
                 )}
             </View>
@@ -95,15 +123,15 @@ export default function AdminPMBScreen() {
                 </View>
                 <View style={[styles.summaryBox, { borderColor: '#F59E0B40' }]}>
                     <Text style={[styles.summaryCount, { color: '#F59E0B' }]}>
-                        {applicants.filter(a => a.status === 'Pending').length}
+                        {applicants.filter((a: any) => a.status === 'Pending').length}
                     </Text>
                     <Text style={styles.summaryLabel}>Pending</Text>
                 </View>
                 <View style={[styles.summaryBox, { borderColor: colors.accent + '40' }]}>
                     <Text style={[styles.summaryCount, { color: colors.accent }]}>
-                        {applicants.filter(a => a.status === 'Verified').length}
+                        {applicants.filter((a: any) => a.status === 'Verified').length}
                     </Text>
-                    <Text style={styles.summaryLabel}>Approved</Text>
+                    <Text style={styles.summaryLabel}>Verified</Text>
                 </View>
             </View>
 
@@ -112,7 +140,7 @@ export default function AdminPMBScreen() {
                 <Ionicons name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
                 <TextInput
                     style={styles.searchInput}
-                    placeholder="Search name or reg no..."
+                    placeholder="Search applicant name..."
                     placeholderTextColor={colors.textSecondary}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
@@ -139,13 +167,11 @@ export default function AdminPMBScreen() {
             </View>
 
             <View style={styles.listContainer}>
-                <Text style={styles.sectionTitle}>
-                    {filterStatus} Applicants ({filteredApplicants.length})
-                </Text>
-
-                {filteredApplicants.length > 0 ? (
+                {rawApplicants === undefined ? (
+                    <ActivityIndicator size="large" color={colors.primarySoft} style={{ marginTop: 40 }} />
+                ) : filteredApplicants.length > 0 ? (
                     filteredApplicants.map(app => (
-                        <ApplicantCard key={app.id} applicant={app} />
+                        <ApplicantCard key={app._id} applicant={app} />
                     ))
                 ) : (
                     <View style={styles.emptyContainer}>
@@ -181,7 +207,6 @@ const styles = StyleSheet.create({
     filterChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
     filterText: { color: colors.textSecondary, fontSize: typography.small, fontWeight: '600' },
     filterTextActive: { color: colors.text },
-    sectionTitle: { fontSize: typography.body, fontWeight: '700', color: colors.text, marginBottom: spacing.md, opacity: 0.8 },
     card: { backgroundColor: colors.card, padding: spacing.md, borderRadius: radii.xl, marginBottom: spacing.md, borderWidth: 1, borderColor: colors.border },
     cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg },
     avatarBox: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primaryMuted, justifyContent: 'center', alignItems: 'center' },
