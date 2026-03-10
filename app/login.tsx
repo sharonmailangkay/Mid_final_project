@@ -21,6 +21,7 @@ export default function LoginScreen() {
     const router = useRouter();
     const [nim, setNim] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
 
     const handleLogin = () => {
@@ -29,11 +30,11 @@ export default function LoginScreen() {
             return;
         }
 
-        if (nim === VALID_NIM && password === VALID_PASSWORD) {
+        if (nim.trim() === VALID_NIM && password.trim() === VALID_PASSWORD) {
             setError("");
             router.replace("/dashboard");
         } else {
-            setError("Invalid credentials. Try NIM 221234567 and password password123.");
+            setError(`Invalid credentials. Try NIM ${VALID_NIM} and password ${VALID_PASSWORD}.`);
         }
     };
 
@@ -90,9 +91,19 @@ export default function LoginScreen() {
                                 onChangeText={setPassword}
                                 placeholder="Enter your password"
                                 placeholderTextColor={colors.textSecondary}
-                                secureTextEntry
+                                secureTextEntry={!showPassword}
                                 style={styles.input}
                             />
+                            <TouchableOpacity
+                                onPress={() => setShowPassword(!showPassword)}
+                                style={{ paddingRight: spacing.md }}
+                            >
+                                <Ionicons
+                                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                                    size={18}
+                                    color={colors.textSecondary}
+                                />
+                            </TouchableOpacity>
                         </View>
                     </View>
 

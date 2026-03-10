@@ -1,36 +1,69 @@
+import { useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { Card } from "../components/Card";
 import { InfoRow } from "../components/InfoRow";
 import { QuickActionCard } from "../components/QuickActionCard";
 import { Screen } from "../components/Screen";
+import { gradeToPoint } from "../constants/data";
 import { colors, radii, spacing, typography } from "../constants/theme";
-import { useStudentData } from "../hooks/useStudentData";
+import { api } from "../convex/_generated/api";
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { student, gpa } = useStudentData();
+
+  // Default NIM for testing (Matches the one we use in Admin/Login)
+  const myNim = "221234567";
+
+  // Fetch real data from Convex
+  const student = useQuery(api.students.getStudentProfile, { nim: myNim });
+  const grades = useQuery(api.students.getMyGrades, { nim: myNim });
+
+  // Calculate real GPA
+  const gpa = React.useMemo(() => {
+    if (!grades || grades.length === 0) return "0.00";
+    let totalPoints = 0;
+    grades.forEach(g => {
+      totalPoints += gradeToPoint(g.grade);
+    });
+    return (totalPoints / grades.length).toFixed(2);
+  }, [grades]);
+
+  if (student === undefined) {
+    return (
+      <Screen>
+        <ActivityIndicator size="large" color={colors.primarySoft} style={{ marginTop: 100 }} />
+      </Screen>
+    );
+  }
+
+  // Fallback if student not found in DB yet
+  const displayStudent = student || {
+    name: "New Student",
+    nim: myNim,
+    major: "Guest",
+    year: "2024"
+  };
 
   return (
     <Screen>
       <View style={styles.header}>
         <Text style={styles.greeting}>Welcome back,</Text>
-        <Text style={styles.name}>{student.name}</Text>
-        <Text style={styles.subheader}>Student Information</Text>
+        <Text style={styles.name}>{displayStudent.name}</Text>
+        <Text style={styles.subheader}>Student Information (Live Data)</Text>
       </View>
 
       <Card style={styles.infoCard}>
-        <InfoRow label="Student ID" value={student.id} />
-        <InfoRow label="Major" value={student.major} />
-        <InfoRow label="Semester" value={student.semester.toString()} />
-        <InfoRow label="Total SKS" value={student.totalCredits.toString()} />
+        <InfoRow label="Student ID" value={displayStudent.nim} />
+        <InfoRow label="Major" value={displayStudent.major} />
+        <InfoRow label="Batch" value={displayStudent.year || "2024"} />
         <InfoRow
           label="Academic Status"
-          value={student.status}
+          value="Active Student"
         />
         <View style={styles.gpaChip}>
-          <Text style={styles.gpaLabel}>Current GPA (IPK)</Text>
+          <Text style={styles.gpaLabel}>Current GPA (IPS)</Text>
           <Text style={styles.gpaValue}>{gpa}</Text>
         </View>
       </Card>
@@ -39,37 +72,25 @@ export default function DashboardScreen() {
 
       <QuickActionCard
         title="Academic Consultation"
-        subtitle="Discuss with your lecturer, kaprodi, or dean"
+        subtitle="Discuss with your lecturer"
         icon="chatbubbles-outline"
         onPress={() => router.push("/consultation")}
       />
       <QuickActionCard
-        title="Study Plan (KRS)"
-        subtitle="Manage your courses for this semester"
-        icon="book-outline"
-        onPress={() => router.push("/krs")}
-      />
-      <QuickActionCard
-        title="Course Schedule"
-        subtitle="View your weekly timetable"
-        icon="calendar-outline"
-        onPress={() => router.push("/schedule")}
-      />
-      <QuickActionCard
         title="Grades & Performance"
-        subtitle="See your course grades & IPS/IPK"
+        subtitle="See your course grades from Lucky (Admin)"
         icon="stats-chart-outline"
         onPress={() => router.push("/grades")}
       />
       <QuickActionCard
-        title="Attendance"
-        subtitle="Track your attendance status"
-        icon="checkmark-done-outline"
-        onPress={() => router.push("/attendance")}
+        title="Study Plan (KRS)"
+        subtitle="View your assigned courses"
+        icon="book-outline"
+        onPress={() => router.push("/krs")}
       />
       <QuickActionCard
         title="Profile"
-        subtitle="View your personal information"
+        subtitle="View your permanent academic profile"
         icon="person-circle-outline"
         onPress={() => router.push("/profile")}
       />
@@ -125,4 +146,3 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
 });
-

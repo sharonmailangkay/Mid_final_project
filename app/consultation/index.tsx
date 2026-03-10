@@ -1,8 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Card } from '../../components/Card';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Screen } from '../../components/Screen';
 import { colors, radii, spacing, typography } from '../../constants/theme';
 import { useConsultations } from '../../context/ConsultationContext';
@@ -44,43 +43,7 @@ export default function ConsultationIndexScreen() {
                 </View>
             </TouchableOpacity>
 
-            <Text style={styles.sectionTitle}>Consultation History</Text>
-
-            {consultations.length === 0 ? (
-                <View style={styles.emptyState}>
-                    <Ionicons name="documents-outline" size={48} color={colors.border} />
-                    <Text style={styles.emptyText}>You haven't requested any consultations yet.</Text>
-                </View>
-            ) : (
-                <FlatList
-                    data={consultations}
-                    keyExtractor={(item) => item.id}
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.listContent}
-                    renderItem={({ item }) => (
-                        <Card style={styles.historyCard} onPress={() => router.push(`/consultation/${item.id}` as any)}>
-                            <View style={styles.cardHeader}>
-                                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
-                                    <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>{item.status}</Text>
-                                </View>
-                                <Text style={styles.dateText}>{item.date}</Text>
-                            </View>
-
-                            <Text style={styles.topicText}>{item.topic}</Text>
-
-                            <View style={styles.staffInfo}>
-                                <Ionicons name="person-circle-outline" size={16} color={colors.textSecondary} />
-                                <Text style={styles.staffName}>{item.staffName}</Text>
-                                <Text style={styles.staffRole}>• {item.staffRole}</Text>
-                            </View>
-
-                            <Text style={styles.messagePreview} numberOfLines={2}>
-                                {item.message}
-                            </Text>
-                        </Card>
-                    )}
-                />
-            )}
+            {/* Consultation History section removed as per request */}
         </Screen>
     );
 }
