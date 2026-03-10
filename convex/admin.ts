@@ -144,6 +144,27 @@ export const upsertGrade = mutation({
 });
 
 /**
+ * DASHBOARD ANALYTICS
+ */
+
+export const getDashboardStats = query({
+    handler: async (ctx) => {
+        const students = await ctx.db.query("students").collect();
+        const applicants = await ctx.db.query("applicants").collect();
+        const consultations = await ctx.db.query("consultations").collect();
+        const courses = await ctx.db.query("courses").collect();
+
+        return {
+            totalStudents: students.length,
+            totalApplicants: applicants.length,
+            pendingPMB: applicants.filter(a => a.status === "Pending").length,
+            pendingConsultations: consultations.filter(c => c.status === "Pending").length,
+            totalCourses: courses.length,
+        };
+    }
+});
+
+/**
  * COURSE MANAGEMENT LOGIC
  */
 
