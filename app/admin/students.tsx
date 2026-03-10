@@ -10,6 +10,40 @@ import { api } from "../../convex/_generated/api";
 
 const MAJORS = ['All', 'Computer Science', 'Information Systems', 'Management'];
 
+// Sub-component moved outside to prevent re-renders and for cleaner code
+const StudentItem = ({ student, onEdit, onDelete }: { student: any; onEdit: (s: any) => void; onDelete: (id: any, name: string) => void }) => (
+    <View style={styles.card}>
+        <View style={styles.studentInfo}>
+            <View style={styles.avatarCircle}>
+                <Text style={styles.avatarText}>{(student.name || '?').charAt(0)}</Text>
+            </View>
+            <View style={styles.textContainer}>
+                <Text style={styles.nameText}>{student.name}</Text>
+                <Text style={styles.nimText}>NIM: {student.nim}</Text>
+                <View style={styles.majorBadge}>
+                    <Ionicons name="school-outline" size={12} color={colors.primarySoft} />
+                    <Text style={styles.majorText}>{student.major}</Text>
+                </View>
+            </View>
+        </View>
+        
+        <View style={styles.actionContainer}>
+            <TouchableOpacity 
+                style={styles.actionBtn} 
+                onPress={() => onEdit(student)}
+            >
+                <Ionicons name="pencil-outline" size={18} color={colors.primarySoft} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+                style={[styles.actionBtn, { borderColor: colors.danger + '40' }]} 
+                onPress={() => onDelete(student._id, student.name)}
+            >
+                <Ionicons name="trash-outline" size={18} color={colors.danger} />
+            </TouchableOpacity>
+        </View>
+    </View>
+);
+
 export default function AdminStudentsScreen() {
     const router = useRouter();
 
@@ -34,8 +68,10 @@ export default function AdminStudentsScreen() {
 
     // Logika Filter & Search
     const filteredStudents = students.filter(student => {
-        const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                             student.nim.includes(searchQuery);
+        const name = student.name || '';
+        const nim = student.nim || '';
+        const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                             nim.includes(searchQuery);
         const matchesMajor = selectedMajor === 'All' || student.major === selectedMajor;
         return matchesSearch && matchesMajor;
     });
@@ -84,6 +120,7 @@ export default function AdminStudentsScreen() {
             }
             setIsModalVisible(false);
         } catch (error) {
+            console.error(error);
             Alert.alert("Error", "Failed to save data. Check your connection.");
         }
     };
@@ -109,39 +146,6 @@ export default function AdminStudentsScreen() {
             ]
         );
     };
-
-    const StudentItem = ({ student }: { student: any }) => (
-        <View style={styles.card}>
-            <View style={styles.studentInfo}>
-                <View style={styles.avatarCircle}>
-                    <Text style={styles.avatarText}>{student.name.charAt(0)}</Text>
-                </View>
-                <View style={styles.textContainer}>
-                    <Text style={styles.nameText}>{student.name}</Text>
-                    <Text style={styles.nimText}>NIM: {student.nim}</Text>
-                    <View style={styles.majorBadge}>
-                        <Ionicons name="school-outline" size={12} color={colors.primarySoft} />
-                        <Text style={styles.majorText}>{student.major}</Text>
-                    </View>
-                </View>
-            </View>
-            
-            <View style={styles.actionContainer}>
-                <TouchableOpacity 
-                    style={styles.actionBtn} 
-                    onPress={() => openModal('edit', student)}
-                >
-                    <Ionicons name="pencil-outline" size={18} color={colors.primarySoft} />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                    style={[styles.actionBtn, { borderColor: colors.danger + '40' }]} 
-                    onPress={() => handleDelete(student._id, student.name)}
-                >
-                    <Ionicons name="trash-outline" size={18} color={colors.danger} />
-                </TouchableOpacity>
-            </View>
-        </View>
-    );
 
     return (
         <Screen scrollable={true}>
@@ -192,7 +196,12 @@ export default function AdminStudentsScreen() {
                     <ActivityIndicator size="large" color={colors.primarySoft} style={{ marginTop: 40 }} />
                 ) : filteredStudents.length > 0 ? (
                     filteredStudents.map(item => (
-                        <StudentItem key={item._id} student={item} />
+                        <StudentItem 
+                            key={item._id} 
+                            student={item} 
+                            onEdit={(s) => openModal('edit', s)}
+                            onDelete={handleDelete}
+                        />
                     ))
                 ) : (
                     <View style={styles.emptyState}>
@@ -245,7 +254,7 @@ export default function AdminStudentsScreen() {
                                     placeholder="Enter NIM"
                                     placeholderTextColor={colors.textSecondary}
                                     keyboardType="numeric"
-                                    editable={modalMode === 'add'} // NIM usually unique, lock it on edit
+                                    editable={modalMode === 'add'}
                                 />
                             </View>
 
@@ -418,7 +427,22 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: colors.border,
     },
-    // Modal Styles
+    emptyState: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 60,
+    },
+    emptyTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: colors.text,
+        marginTop: spacing.md,
+    },
+    emptyDesc: {
+        fontSize: 14,
+        color: colors.textSecondary,
+        marginTop: 4,
+    },
     modalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(0,0,0,0.7)',

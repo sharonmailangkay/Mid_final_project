@@ -1,13 +1,38 @@
-import React from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import React, { useMemo } from "react";
+import { FlatList, StyleSheet, Text, View, ActivityIndicator } from "react-native";
 import { Card } from "../components/Card";
 import { Screen } from "../components/Screen";
 import { gradeToPoint } from "../constants/data";
 import { colors, radii, spacing, typography } from "../constants/theme";
-import { useStudentData } from "../hooks/useStudentData";
+import { useQuery } from "convex/react";
+import { api } from "../convex/_generated/api";
 
 export default function GradesScreen() {
-  const { grades, gpa } = useStudentData();
+  // --- CONVEX DATA ---
+  // Default NIM for testing (usually this comes from login state)
+  const myNim = "105021001"; 
+  const liveGrades = useQuery(api.students.getMyGrades, { nim: myNim });
+
+  // Dynamic GPA Calculation
+  const semesterGPA = useMemo(() => {
+    if (!liveGrades || liveGrades.length === 0) return "0.00";
+    
+    let totalPoints = 0;
+    // Assuming each course is 3 credits for simple calculation if credits field is missing in schema
+    liveGrades.forEach(g => {
+      totalPoints += gradeToPoint(g.grade);
+    });
+    
+    return (totalPoints / liveGrades.length).toFixed(2);
+  }, [liveGrades]);
+
+  if (liveGrades === undefined) {
+    return (
+      <Screen>
+        <ActivityIndicator size="large" color={colors.primarySoft} style={{ marginTop: 100 }} />
+      </Screen>
+    );
+  }
 
   return (
     <Screen>
@@ -15,15 +40,15 @@ export default function GradesScreen() {
       <Text style={styles.subtitle}>Your course grades and GPA</Text>
 
       <FlatList
-        data={grades}
-        keyExtractor={(item) => item.id}
+        data={liveGrades}
+        keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
           <Card style={styles.card}>
             <View style={styles.row}>
               <View style={styles.courseInfo}>
-                <Text style={styles.courseName}>{item.name}</Text>
-                <Text style={styles.credits}>{item.credits} credits • {gradeToPoint(item.grade).toFixed(1)} Pts</Text>
+                <Text style={styles.courseName}>{item.course}</Text>
+                <Text style={styles.credits}>3 credits • {gradeToPoint(item.grade).toFixed(1)} Pts</Text>
               </View>
               <View style={styles.gradeChip}>
                 <Text style={styles.gradeText}>{item.grade}</Text>
@@ -31,11 +56,16 @@ export default function GradesScreen() {
             </View>
           </Card>
         )}
+        ListEmptyComponent={
+          <View style={{ alignItems: 'center', marginTop: 40 }}>
+            <Text style={{ color: colors.textSecondary }}>No grades assigned yet.</Text>
+          </View>
+        }
         ListFooterComponent={
           <View>
             <View style={styles.gpaCard}>
               <Text style={styles.gpaLabel}>Semester GPA (IPS)</Text>
-              <Text style={styles.gpaValue}>{gpa}</Text>
+              <Text style={styles.gpaValue}>{semesterGPA}</Text>
             </View>
             <View style={[styles.gpaCard, { marginTop: spacing.md }]}>
               <Text style={styles.gpaLabel}>Cumulative GPA (IPK)</Text>

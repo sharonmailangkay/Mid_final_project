@@ -101,6 +101,49 @@ export const completeConsultation = mutation({
 });
 
 /**
+ * GRADE MANAGEMENT LOGIC
+ */
+
+export const getGrades = query({
+    handler: async (ctx) => {
+        return await ctx.db.query("grades").order("desc").collect();
+    }
+});
+
+export const upsertGrade = mutation({
+    args: {
+        studentName: v.string(),
+        nim: v.string(),
+        course: v.string(),
+        grade: v.string(),
+    },
+    handler: async (ctx, args) => {
+        // Check if grade already exists for this student and course
+        const existing = await ctx.db
+            .query("grades")
+            .filter((q) => 
+                q.and(
+                    q.eq(q.field("nim"), args.nim),
+                    q.eq(q.field("course"), args.course)
+                )
+            )
+            .first();
+
+        if (existing) {
+            await ctx.db.patch(existing._id, { grade: args.grade });
+            return existing._id;
+        } else {
+            return await ctx.db.insert("grades", {
+                studentName: args.studentName,
+                nim: args.nim,
+                course: args.course,
+                grade: args.grade,
+            });
+        }
+    }
+});
+
+/**
  * UTILITY: CLEAR ALL (Adapted from user's clearAllTodos)
  */
 export const clearAllData = mutation({
