@@ -1,88 +1,116 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { PageHeader } from '../../components/PageHeader';
 import { Screen } from '../../components/Screen';
 import { colors, radii, spacing, typography } from '../../constants/theme';
-
-// Mock Data Mahasiswa Aktif
-const INITIAL_STUDENTS = [
-    { id: '1', name: 'Jane Smith', nim: '105021001', major: 'Computer Science', year: '2021' },
-    { id: '2', name: 'Michael Scott', nim: '105021002', major: 'Information Systems', year: '2022' },
-    { id: '3', name: 'Dwight Schrute', nim: '105021003', major: 'Management', year: '2021' },
-    { id: '4', name: 'Jim Halpert', nim: '105021004', major: 'Computer Science', year: '2023' },
-    { id: '5', name: 'Pam Beesly', nim: '105021005', major: 'Information Systems', year: '2022' },
-];
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
 
 const MAJORS = ['All', 'Computer Science', 'Information Systems', 'Management'];
 
 export default function AdminStudentsScreen() {
     const router = useRouter();
-    const [students, setStudents] = useState(INITIAL_STUDENTS);
+
+    // --- CONVEX DATA ---
+    const rawStudents = useQuery(api.admin.getStudents);
+    const students = rawStudents || [];
+    const deleteStudent = useMutation(api.admin.deleteStudent);
+    const updateStudent = useMutation(api.admin.updateStudent);
+    const addStudent = useMutation(api.admin.addStudent);
+
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedMajor, setSelectedMajor] = useState('All');
 
-    // State untuk Modal Edit
-    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-    const [editingStudent, setEditingStudent] = useState<any>(null);
-    const [editName, setEditName] = useState('');
-    const [editNim, setEditNim] = useState('');
-    const [editMajor, setEditMajor] = useState('');
+    // State untuk Modal Edit & Add
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+    const [editingStudentId, setEditingStudentId] = useState<any>(null);
+    
+    const [formName, setFormName] = useState('');
+    const [formNim, setFormNim] = useState('');
+    const [formMajor, setFormMajor] = useState('Computer Science');
 
     // Logika Filter & Search
     const filteredStudents = students.filter(student => {
-        const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            student.nim.includes(searchQuery);
+        const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                             student.nim.includes(searchQuery);
         const matchesMajor = selectedMajor === 'All' || student.major === selectedMajor;
         return matchesSearch && matchesMajor;
     });
 
-    // Buka Modal Edit
-    const openEditModal = (student: any) => {
-        setEditingStudent(student);
-        setEditName(student.name);
-        setEditNim(student.nim);
-        setEditMajor(student.major);
-        setIsEditModalVisible(true);
+    // Buka Modal
+    const openModal = (mode: 'add' | 'edit', student?: any) => {
+        setModalMode(mode);
+        if (mode === 'edit' && student) {
+            setEditingStudentId(student._id);
+            setFormName(student.name);
+            setFormNim(student.nim);
+            setFormMajor(student.major);
+        } else {
+            setEditingStudentId(null);
+            setFormName('');
+            setFormNim('');
+            setFormMajor('Computer Science');
+        }
+        setIsModalVisible(true);
     };
 
-    // Simpan Perubahan Edit
-    const saveChanges = () => {
-        if (!editName || !editNim) {
+    // Simpan Perubahan (Add atau Edit)
+    const handleSave = async () => {
+        if (!formName || !formNim) {
             Alert.alert("Error", "Name and NIM cannot be empty!");
             return;
         }
 
-        setStudents(prev => prev.map(s =>
-            s.id === editingStudent.id
-                ? { ...s, name: editName, nim: editNim, major: editMajor }
-                : s
-        ));
-
-        setIsEditModalVisible(false);
-        Alert.alert("Success", "Student information updated!");
+        try {
+            if (modalMode === 'edit') {
+                await updateStudent({ 
+                    id: editingStudentId, 
+                    name: formName, 
+                    nim: formNim, 
+                    major: formMajor 
+                });
+                Alert.alert("Success", "Student updated!");
+            } else {
+                await addStudent({ 
+                    name: formName, 
+                    nim: formNim, 
+                    major: formMajor,
+                    year: new Date().getFullYear().toString()
+                });
+                Alert.alert("Success", "New student added!");
+            }
+            setIsModalVisible(false);
+        } catch (error) {
+            Alert.alert("Error", "Failed to save data. Check your connection.");
+        }
     };
 
     // Fungsi Hapus dengan Konfirmasi
-    const handleDelete = (id: string, name: string) => {
+    const handleDelete = (id: any, name: string) => {
         Alert.alert(
             "Delete Student",
             `Are you sure you want to delete ${name}?`,
             [
                 { text: "Cancel", style: "cancel" },
-                {
-                    text: "Delete",
+                { 
+                    text: "Delete", 
                     style: "destructive",
-                    onPress: () => {
-                        setStudents(prev => prev.filter(s => s.id !== id));
+                    onPress: async () => {
+                        try {
+                            await deleteStudent({ id });
+                        } catch (e) {
+                            Alert.alert("Error", "Failed to delete student.");
+                        }
                     }
                 }
             ]
         );
     };
 
-    const StudentItem = ({ student }: { student: typeof INITIAL_STUDENTS[0] }) => (
+    const StudentItem = ({ student }: { student: any }) => (
         <View style={styles.card}>
             <View style={styles.studentInfo}>
                 <View style={styles.avatarCircle}>
@@ -97,17 +125,17 @@ export default function AdminStudentsScreen() {
                     </View>
                 </View>
             </View>
-
+            
             <View style={styles.actionContainer}>
-                <TouchableOpacity
-                    style={styles.actionBtn}
-                    onPress={() => openEditModal(student)}
+                <TouchableOpacity 
+                    style={styles.actionBtn} 
+                    onPress={() => openModal('edit', student)}
                 >
                     <Ionicons name="pencil-outline" size={18} color={colors.primarySoft} />
                 </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.actionBtn, { borderColor: colors.danger + '40' }]}
-                    onPress={() => handleDelete(student.id, student.name)}
+                <TouchableOpacity 
+                    style={[styles.actionBtn, { borderColor: colors.danger + '40' }]} 
+                    onPress={() => handleDelete(student._id, student.name)}
                 >
                     <Ionicons name="trash-outline" size={18} color={colors.danger} />
                 </TouchableOpacity>
@@ -121,7 +149,7 @@ export default function AdminStudentsScreen() {
                 title="Student Database"
                 subtitle="Manage active students"
                 rightIcon="person-add-outline"
-                onRightPress={() => alert('Add New Student Interface')}
+                onRightPress={() => openModal('add')}
             />
 
             {/* Pencarian */}
@@ -160,37 +188,49 @@ export default function AdminStudentsScreen() {
 
             {/* Daftar Mahasiswa */}
             <View style={styles.listSection}>
-                {filteredStudents.map(item => (
-                    <StudentItem key={item.id} student={item} />
-                ))}
+                {rawStudents === undefined ? (
+                    <ActivityIndicator size="large" color={colors.primarySoft} style={{ marginTop: 40 }} />
+                ) : filteredStudents.length > 0 ? (
+                    filteredStudents.map(item => (
+                        <StudentItem key={item._id} student={item} />
+                    ))
+                ) : (
+                    <View style={styles.emptyState}>
+                        <Ionicons name="people-outline" size={60} color={colors.cardSoft} />
+                        <Text style={styles.emptyTitle}>No Students Found</Text>
+                        <Text style={styles.emptyDesc}>Try changing your search or filter</Text>
+                    </View>
+                )}
             </View>
 
-            {/* Modal Edit Mahasiswa */}
+            {/* Modal Edit/Add Mahasiswa */}
             <Modal
-                visible={isEditModalVisible}
+                visible={isModalVisible}
                 animationType="slide"
                 transparent={true}
-                onRequestClose={() => setIsEditModalVisible(false)}
+                onRequestClose={() => setIsModalVisible(false)}
             >
                 <View style={styles.modalOverlay}>
-                    <KeyboardAvoidingView
+                    <KeyboardAvoidingView 
                         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                         style={styles.modalContent}
                     >
                         <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Edit Student Info</Text>
-                            <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
+                            <Text style={styles.modalTitle}>
+                                {modalMode === 'add' ? 'Add New Student' : 'Edit Student Info'}
+                            </Text>
+                            <TouchableOpacity onPress={() => setIsModalVisible(false)}>
                                 <Ionicons name="close" size={24} color={colors.text} />
                             </TouchableOpacity>
                         </View>
 
-                        <ScrollView>
+                        <ScrollView showsVerticalScrollIndicator={false}>
                             <View style={styles.inputGroup}>
                                 <Text style={styles.inputLabel}>Full Name</Text>
                                 <TextInput
                                     style={styles.modalInput}
-                                    value={editName}
-                                    onChangeText={setEditName}
+                                    value={formName}
+                                    onChangeText={setFormName}
                                     placeholder="Enter full name"
                                     placeholderTextColor={colors.textSecondary}
                                 />
@@ -200,11 +240,12 @@ export default function AdminStudentsScreen() {
                                 <Text style={styles.inputLabel}>NIM (Student ID)</Text>
                                 <TextInput
                                     style={styles.modalInput}
-                                    value={editNim}
-                                    onChangeText={setEditNim}
+                                    value={formNim}
+                                    onChangeText={setFormNim}
                                     placeholder="Enter NIM"
                                     placeholderTextColor={colors.textSecondary}
                                     keyboardType="numeric"
+                                    editable={modalMode === 'add'} // NIM usually unique, lock it on edit
                                 />
                             </View>
 
@@ -216,24 +257,26 @@ export default function AdminStudentsScreen() {
                                             key={major}
                                             style={[
                                                 styles.majorOption,
-                                                editMajor === major && styles.majorOptionActive
+                                                formMajor === major && styles.majorOptionActive
                                             ]}
-                                            onPress={() => setEditMajor(major)}
+                                            onPress={() => setFormMajor(major)}
                                         >
                                             <Text style={[
                                                 styles.majorOptionText,
-                                                editMajor === major && styles.majorOptionTextActive
+                                                formMajor === major && styles.majorOptionTextActive
                                             ]}>{major}</Text>
                                         </TouchableOpacity>
                                     ))}
                                 </View>
                             </View>
 
-                            <TouchableOpacity
+                            <TouchableOpacity 
                                 style={styles.saveBtn}
-                                onPress={saveChanges}
+                                onPress={handleSave}
                             >
-                                <Text style={styles.saveBtnText}>Save Changes</Text>
+                                <Text style={styles.saveBtnText}>
+                                    {modalMode === 'add' ? 'Add Student' : 'Save Changes'}
+                                </Text>
                                 <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
                             </TouchableOpacity>
                         </ScrollView>
