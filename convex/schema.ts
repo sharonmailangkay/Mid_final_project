@@ -28,4 +28,10 @@ export default defineSchema({
     course: v.string(),
     grade: v.string(),
   }),
+  courses: defineTable({
+    code: v.string(),
+    name: v.string(),
+    sks: v.string(),
+    lecturer: v.string(),
+  }),
 });

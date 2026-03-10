@@ -1,39 +1,46 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useMutation, useQuery } from 'convex/react';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { PageHeader } from '../../components/PageHeader';
 import { Screen } from '../../components/Screen';
 import { colors, radii, spacing, typography } from '../../constants/theme';
-
-// Mock Data
-const INITIAL_CONSULTATIONS = [
-    { id: '1', name: 'Jane Smith', topic: 'Thesis Approval', date: '12 Oct 2026', status: 'Pending', assignee: null },
-    { id: '2', name: 'Michael Scott', topic: 'Course Selection', date: '11 Oct 2026', status: 'Assigned', assignee: 'Dr. Alan Turing' },
-    { id: '3', name: 'Dwight Schrute', topic: 'Internship', date: '10 Oct 2026', status: 'Assigned', assignee: 'Dean of Faculty' },
-];
+import { api } from '../../convex/_generated/api';
 
 export default function AdminConsultationsScreen() {
     const router = useRouter();
-    const [requests, setRequests] = useState(INITIAL_CONSULTATIONS);
 
-    const handleAssign = (id: string) => {
-        setRequests(prev => prev.map(req =>
-            req.id === id ? { ...req, status: 'Assigned', assignee: 'Dean of Faculty' } : req
-        ));
+    // --- CONVEX DATA ---
+    const rawRequests = useQuery(api.admin.getConsultations);
+    const assignConsultation = useMutation(api.admin.assignConsultation);
+    const completeConsultation = useMutation(api.admin.completeConsultation);
+
+    const requests = rawRequests || [];
+
+    const handleAssign = async (id: any) => {
+        try {
+            await assignConsultation({ id, assignee: 'Dean of Faculty' });
+            Alert.alert("Success", "Request assigned to Dean.");
+        } catch (error) {
+            Alert.alert("Error", "Failed to assign request.");
+        }
     };
 
-    const handleComplete = (id: string) => {
-        setRequests(prev => prev.map(req =>
-            req.id === id ? { ...req, status: 'Completed' } : req
-        ));
+    const handleComplete = async (id: any) => {
+        try {
+            await completeConsultation({ id });
+            Alert.alert("Success", "Consultation marked as done.");
+        } catch (error) {
+            Alert.alert("Error", "Failed to complete request.");
+        }
     };
 
-    const RequestCard = ({ request }: { request: typeof INITIAL_CONSULTATIONS[0] }) => (
+    const RequestCard = ({ request }: { request: any }) => (
         <View style={styles.card}>
             <View style={styles.cardHeader}>
-                <View>
-                    <Text style={styles.name}>{request.name}</Text>
+                <View style={{ flex: 1 }}>
+                    <Text style={styles.name}>{request.studentName}</Text>
                     <Text style={styles.topic}>{request.topic} • {request.date}</Text>
                 </View>
                 <View style={[
@@ -64,12 +71,12 @@ export default function AdminConsultationsScreen() {
 
             <View style={styles.actionRow}>
                 {request.status === 'Pending' ? (
-                    <TouchableOpacity style={styles.btnSecondary} onPress={() => handleAssign(request.id)}>
+                    <TouchableOpacity style={styles.btnSecondary} onPress={() => handleAssign(request._id)}>
                         <Ionicons name="person-add" size={16} color={colors.text} />
                         <Text style={styles.btnText}>Assign to Dean</Text>
                     </TouchableOpacity>
                 ) : request.status === 'Assigned' ? (
-                    <TouchableOpacity style={styles.btnPrimary} onPress={() => handleComplete(request.id)}>
+                    <TouchableOpacity style={styles.btnPrimary} onPress={() => handleComplete(request._id)}>
                         <Ionicons name="checkmark-done" size={16} color={colors.text} />
                         <Text style={styles.btnText}>Mark as Done</Text>
                     </TouchableOpacity>
@@ -85,12 +92,25 @@ export default function AdminConsultationsScreen() {
 
     return (
         <Screen scrollable={true}>
-            <PageHeader title="Consultations Request" />
+            <PageHeader
+                title="Consultations Request"
+                subtitle="Manage student academic support"
+            />
 
             <View style={styles.listContainer}>
-                {requests.map(req => (
-                    <RequestCard key={req.id} request={req} />
-                ))}
+                {rawRequests === undefined ? (
+                    <ActivityIndicator size="large" color={colors.primarySoft} style={{ marginTop: 40 }} />
+                ) : requests.length > 0 ? (
+                    requests.map(req => (
+                        <RequestCard key={req._id} request={req} />
+                    ))
+                ) : (
+                    <View style={styles.emptyState}>
+                        <Ionicons name="chatbubbles-outline" size={60} color={colors.cardSoft} />
+                        <Text style={styles.emptyTitle}>No Requests Yet</Text>
+                        <Text style={styles.emptyDesc}>Requests from students will appear here.</Text>
+                    </View>
+                )}
             </View>
         </Screen>
     );
@@ -117,5 +137,8 @@ const styles = StyleSheet.create({
     btnSecondary: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.cardSoft, paddingVertical: spacing.md, borderRadius: radii.md, gap: 8, borderWidth: 1, borderColor: colors.border },
     btnText: { color: colors.text, fontSize: typography.small, fontWeight: '700' },
     finishedBox: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: spacing.sm, width: '100%' },
-    finishedText: { color: colors.accent, fontWeight: '600', fontSize: typography.small }
+    finishedText: { color: colors.accent, fontWeight: '600', fontSize: typography.small },
+    emptyState: { alignItems: 'center', marginTop: 60, paddingHorizontal: 40 },
+    emptyTitle: { color: colors.text, fontSize: 18, fontWeight: '700', marginTop: spacing.md },
+    emptyDesc: { color: colors.textSecondary, textAlign: 'center', marginTop: spacing.xs },
 });

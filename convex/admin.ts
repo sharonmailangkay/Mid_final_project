@@ -121,7 +121,7 @@ export const upsertGrade = mutation({
         // Check if grade already exists for this student and course
         const existing = await ctx.db
             .query("grades")
-            .filter((q) => 
+            .filter((q) =>
                 q.and(
                     q.eq(q.field("nim"), args.nim),
                     q.eq(q.field("course"), args.course)
@@ -140,6 +140,40 @@ export const upsertGrade = mutation({
                 grade: args.grade,
             });
         }
+    }
+});
+
+/**
+ * COURSE MANAGEMENT LOGIC
+ */
+
+export const getCourses = query({
+    handler: async (ctx) => {
+        return await ctx.db.query("courses").order("desc").collect();
+    }
+});
+
+export const addCourse = mutation({
+    args: {
+        code: v.string(),
+        name: v.string(),
+        sks: v.string(),
+        lecturer: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await ctx.db.insert("courses", {
+            code: args.code,
+            name: args.name,
+            sks: args.sks,
+            lecturer: args.lecturer,
+        });
+    }
+});
+
+export const removeCourse = mutation({
+    args: { id: v.id("courses") },
+    handler: async (ctx, args) => {
+        await ctx.db.delete(args.id);
     }
 });
 
