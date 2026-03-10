@@ -44,6 +44,23 @@ export const requestConsultation = mutation({
     }
 });
 
+// Submit a new applicant (Sharon's registration side)
+export const addApplicant = mutation({
+    args: {
+        name: v.string(),
+        email: v.string(),
+        phone: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await ctx.db.insert("applicants", {
+            name: args.name,
+            email: args.email,
+            phone: args.phone,
+            status: "Pending",
+        });
+    }
+});
+
 // Get basic profile info (Sharon's side)
 export const getStudentProfile = query({
     args: { nim: v.string() },
