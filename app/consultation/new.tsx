@@ -6,7 +6,9 @@ import { Card } from '../../components/Card';
 import { Screen } from '../../components/Screen';
 import { colors, radii, spacing, typography } from '../../constants/theme';
 import { useConsultations } from '../../context/ConsultationContext';
-import { useStudentData } from '../../hooks/useStudentData';
+import { useUser } from '../../context/UserContext';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
 const TOPICS = [
     "Internship (Magang)",
@@ -24,8 +26,11 @@ const STAFF_ROLES = [
 
 export default function NewConsultationScreen() {
     const router = useRouter();
-    const { student } = useStudentData();
-    const { addConsultation } = useConsultations();
+    const { nim } = useUser();
+    
+    // Fetch real student profile from Convex
+    const student = useQuery(api.students.getStudentProfile, { nim: nim || "" });
+    const requestConsultation = useMutation(api.students.requestConsultation);
 
     const [topic, setTopic] = useState('');
     const [staffRole, setStaffRole] = useState('');
@@ -47,24 +52,23 @@ export default function NewConsultationScreen() {
                 { text: "Cancel", style: "cancel" },
                 {
                     text: "Submit",
-                    onPress: () => {
-                        // Generate a dummy ID and date
-                        const newId = `c-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
-                        const today = new Date().toISOString().split('T')[0];
+                    onPress: async () => {
+                        try {
+                            const today = new Date().toISOString().split('T')[0];
 
-                        addConsultation({
-                            id: newId,
-                            topic: topic,
-                            staffName: "Pending Assignment",
-                            staffRole: staffRole as any,
-                            message: message,
-                            status: "Pending",
-                            date: today,
-                        });
+                            await requestConsultation({
+                                studentName: student?.name || "Unknown Student",
+                                topic: topic,
+                                message: message,
+                                date: today, 
+                            });
 
-                        Alert.alert("Success", "Your consultation request has been submitted.", [
-                            { text: "OK", onPress: () => router.back() }
-                        ]);
+                            Alert.alert("Success", "Your consultation request has been submitted to the portal.", [
+                                { text: "OK", onPress: () => router.back() }
+                            ]);
+                        } catch (e) {
+                            Alert.alert("Error", "Failed to submit request to server.");
+                        }
                     }
                 }
             ]
@@ -87,16 +91,16 @@ export default function NewConsultationScreen() {
                     <Card style={styles.formCard}>
 
                         <View style={styles.inputGroup}>
-                            <Text style={styles.label}>Student Name</Text>
+                            <Text style={styles.label}>Student Name (Auto-filled)</Text>
                             <View style={styles.disabledInput}>
-                                <Text style={styles.disabledText}>{student.name}</Text>
+                                <Text style={styles.disabledText}>{student?.name || "Loading..."}</Text>
                             </View>
                         </View>
 
                         <View style={styles.inputGroup}>
-                            <Text style={styles.label}>Student ID (NIM)</Text>
+                            <Text style={styles.label}>Student ID / NIM (Auto-filled)</Text>
                             <View style={styles.disabledInput}>
-                                <Text style={styles.disabledText}>{student.id}</Text>
+                                <Text style={styles.disabledText}>{student?.nim || nim || "---"}</Text>
                             </View>
                         </View>
 

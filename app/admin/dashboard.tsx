@@ -81,7 +81,7 @@ export default function AdminDashboardScreen() {
             <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Management Menu</Text>
                 <View style={styles.badge}>
-                    <Text style={styles.badgeText}>6 Modules</Text>
+                    <Text style={styles.badgeText}>5 Modules</Text>
                 </View>
             </View>
 
@@ -128,13 +128,6 @@ export default function AdminDashboardScreen() {
                     count={stats?.pendingConsultations}
                 />
 
-                <MenuCard
-                    title="Settings"
-                    desc="System configuration & audit logs"
-                    icon="settings-outline"
-                    color={colors.textSecondary}
-                    route="/admin/dashboard"
-                />
             </View>
 
             {/* Logout Button */}

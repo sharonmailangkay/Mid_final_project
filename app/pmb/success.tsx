@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Card } from '../../components/Card';
@@ -8,10 +8,11 @@ import { colors, radii, spacing, typography } from '../../constants/theme';
 
 export default function PMBSuccessScreen() {
     const router = useRouter();
+    const { nim, name } = useLocalSearchParams();
 
-    // Simulated auto-generated data
+    // The real NIM from database
+    const studentNim = nim as string || "---";
     const regNumber = `REG-${Math.floor(100000 + Math.random() * 900000)}`;
-    const nim = `226${Math.floor(10000 + Math.random() * 90000)}`;
 
     return (
         <Screen>
@@ -50,7 +51,7 @@ export default function PMBSuccessScreen() {
                     <View style={styles.dataRow}>
                         <View>
                             <Text style={styles.label}>Generated Student ID (NIM)</Text>
-                            <Text style={styles.value}>{nim}</Text>
+                            <Text style={styles.value}>{nim || "---"}</Text>
                         </View>
                         <Ionicons name="copy-outline" size={20} color={colors.icon} />
                     </View>

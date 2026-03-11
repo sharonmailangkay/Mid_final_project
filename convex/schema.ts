@@ -20,6 +20,7 @@ export default defineSchema({
     topic: v.string(),
     date: v.string(),
     status: v.string(), // 'Pending', 'Assigned', 'Completed'
+    message: v.string(),
     assignee: v.optional(v.string()),
   }),
   grades: defineTable({

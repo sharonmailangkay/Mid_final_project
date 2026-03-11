@@ -7,9 +7,21 @@ import { Screen } from '../../components/Screen';
 import { colors, radii, spacing, typography } from '../../constants/theme';
 import { useConsultations } from '../../context/ConsultationContext';
 
+import { useUser } from '../../context/UserContext';
+import { useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+
 export default function ConsultationIndexScreen() {
     const router = useRouter();
-    const { consultations } = useConsultations();
+    const { nim } = useUser();
+    
+    // Fetch live consultation profile to get the name
+    const student = useQuery(api.students.getStudentProfile, { nim: nim || "" });
+    const studentName = student?.name || "";
+
+    // Fetch all consultations and filter by current student name
+    const allConsultations = useQuery(api.admin.getConsultations) || [];
+    const consultations = allConsultations.filter(c => c.studentName === studentName);
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -54,11 +66,11 @@ export default function ConsultationIndexScreen() {
             ) : (
                 <FlatList
                     data={consultations}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={(item) => item._id}
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.listContent}
                     renderItem={({ item }) => (
-                        <Card style={styles.historyCard} onPress={() => router.push(`/consultation/${item.id}` as any)}>
+                        <Card style={styles.historyCard} onPress={() => router.push(`/consultation/${item._id}` as any)}>
                             <View style={styles.cardHeader}>
                                 <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
                                     <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>{item.status}</Text>
@@ -70,8 +82,8 @@ export default function ConsultationIndexScreen() {
 
                             <View style={styles.staffInfo}>
                                 <Ionicons name="person-circle-outline" size={16} color={colors.textSecondary} />
-                                <Text style={styles.staffName}>{item.staffName}</Text>
-                                <Text style={styles.staffRole}>• {item.staffRole}</Text>
+                                <Text style={styles.staffName}>{item.assignee || "Waiting for Admin"}</Text>
+                                <Text style={styles.staffRole}>• {item.status}</Text>
                             </View>
 
                             <Text style={styles.messagePreview} numberOfLines={2}>

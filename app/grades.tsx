@@ -6,12 +6,11 @@ import { gradeToPoint } from "../constants/data";
 import { colors, radii, spacing, typography } from "../constants/theme";
 import { useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
+import { useUser } from "../context/UserContext";
 
 export default function GradesScreen() {
-  // --- CONVEX DATA ---
-  // Default NIM for testing (usually this comes from login state)
-  const myNim = "105021001"; 
-  const liveGrades = useQuery(api.students.getMyGrades, { nim: myNim });
+  const { nim } = useUser();
+  const liveGrades = useQuery(api.students.getMyGrades, { nim: nim || "" });
 
   // Dynamic GPA Calculation
   const semesterGPA = useMemo(() => {

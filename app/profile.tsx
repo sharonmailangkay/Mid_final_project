@@ -5,12 +5,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";
 import { InfoRow } from "../components/InfoRow";
-import { useStudentData } from "../hooks/useStudentData";
+import { useUser } from "../context/UserContext";
+import { useQuery } from "convex/react";
+import { api } from "../convex/_generated/api";
 import { colors, radii, spacing, typography } from "../constants/theme";
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { student } = useStudentData();
+  const { nim, setNim } = useUser();
+  const student = useQuery(api.students.getStudentProfile, { nim: nim || "" });
 
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to log out?", [
@@ -19,6 +22,7 @@ export default function ProfileScreen() {
         text: "Logout",
         style: "destructive",
         onPress: () => {
+          setNim(null);
           router.replace("/");
         },
       },
@@ -30,21 +34,23 @@ export default function ProfileScreen() {
       <View style={styles.header}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
-            {student.name
-              .split(" ")
-              .map((part) => part[0])
-              .join("")
-              .toUpperCase()}
+            {student?.name
+              ? student.name
+                  .split(" ")
+                  .map((part) => part[0])
+                  .join("")
+                  .toUpperCase()
+              : "ST"}
           </Text>
         </View>
-        <Text style={styles.name}>{student.name}</Text>
-        <Text style={styles.id}>{student.id}</Text>
+        <Text style={styles.name}>{student?.name || "Student"}</Text>
+        <Text style={styles.id}>{student?.nim || nim || "---"}</Text>
       </View>
 
       <Card style={styles.infoCard}>
-        <InfoRow label="Email" value={student.email} />
-        <InfoRow label="Major" value={student.major} />
-        <InfoRow label="Semester" value={student.semester} />
+        <InfoRow label="Email" value={"student@university.ac.id"} />
+        <InfoRow label="Major" value={student?.major || "Computer Science"} />
+        <InfoRow label="Semester" value={"1"} />
       </Card>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>

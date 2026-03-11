@@ -5,6 +5,8 @@ import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Screen } from '../../components/Screen';
 import { colors, radii, spacing, typography } from '../../constants/theme';
+import { useMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
 const FormField = ({ label, value, field, placeholder, keyboardType = 'default', handleInputChange }: any) => (
     <View style={styles.inputContainer}>
@@ -19,6 +21,32 @@ const FormField = ({ label, value, field, placeholder, keyboardType = 'default',
         />
     </View>
 );
+
+const MajorSelector = ({ label, selectedValue, onSelect }: any) => {
+    const majors = ["Informatika", "Sistem Informasi", "Akuntansi", "Manajemen", "Filsafat"];
+    return (
+        <View style={styles.inputContainer}>
+            <Text style={styles.label}>{label}</Text>
+            <View style={styles.majorGrid}>
+                {majors.map((m) => (
+                    <TouchableOpacity
+                        key={m}
+                        style={[
+                            styles.majorChip,
+                            selectedValue === m && styles.majorChipActive
+                        ]}
+                        onPress={() => onSelect('major', m)}
+                    >
+                        <Text style={[
+                            styles.majorChipText,
+                            selectedValue === m && styles.majorChipTextActive
+                        ]}>{m}</Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
+        </View>
+    );
+};
 
 const DocumentUpload = ({ label, docType, documents, pickDocument }: any) => (
     <View style={styles.uploadContainer}>
@@ -41,6 +69,7 @@ const DocumentUpload = ({ label, docType, documents, pickDocument }: any) => (
 
 export default function PMBRegisterScreen() {
     const router = useRouter();
+    const addApplicant = useMutation(api.students.addApplicant);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -96,7 +125,7 @@ export default function PMBRegisterScreen() {
         return "";
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const validationError = validateForm();
         if (validationError) {
             setErrorMsg(validationError);
@@ -106,12 +135,24 @@ export default function PMBRegisterScreen() {
         setErrorMsg("");
         setIsSubmitting(true);
 
-        // Simulate API submission delay
-        setTimeout(() => {
+        try {
+            const result = await addApplicant({
+                name: formData.fullName,
+                email: formData.email,
+                phone: formData.phone,
+            });
+            
             setIsSubmitting(false);
-            // On success, go to verification status page (simulating form submitted to review)
-            router.push('/pmb/verification');
-        }, 2000);
+            // Pass the applicant ID to the verification screen
+            router.push({
+                pathname: '/pmb/verification',
+                params: { id: result }
+            });
+        } catch (error) {
+            console.error(error);
+            setIsSubmitting(false);
+            setErrorMsg("Failed to submit application. Please try again.");
+        }
     };
 
     return (
@@ -141,7 +182,7 @@ export default function PMBRegisterScreen() {
                     <FormField label="Phone Number" value={formData.phone} field="phone" placeholder="+62 8..." keyboardType="phone-pad" handleInputChange={handleInputChange} />
                     <FormField label="Address" value={formData.address} field="address" placeholder="Complete address" handleInputChange={handleInputChange} />
                     <FormField label="High School Name" value={formData.highSchool} field="highSchool" placeholder="Asal sekolah" handleInputChange={handleInputChange} />
-                    <FormField label="Desired Major" value={formData.major} field="major" placeholder="Program Studi pilihan" handleInputChange={handleInputChange} />
+                    <MajorSelector label="Desired Major" selectedValue={formData.major} onSelect={handleInputChange} />
 
                     <View style={styles.divider} />
 
@@ -225,6 +266,32 @@ const styles = StyleSheet.create({
         padding: spacing.md,
         color: colors.text,
         fontSize: typography.body,
+    },
+    majorGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: spacing.sm,
+        marginTop: spacing.xs,
+    },
+    majorChip: {
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
+        borderRadius: radii.pill,
+        backgroundColor: colors.cardSoft,
+        borderWidth: 1,
+        borderColor: colors.border,
+    },
+    majorChipActive: {
+        backgroundColor: colors.primary,
+        borderColor: colors.primary,
+    },
+    majorChipText: {
+        color: colors.textSecondary,
+        fontSize: typography.small,
+        fontWeight: '600',
+    },
+    majorChipTextActive: {
+        color: colors.text,
     },
     divider: {
         height: 1,

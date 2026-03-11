@@ -1,37 +1,59 @@
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Card } from "../components/Card";
 import { InfoRow } from "../components/InfoRow";
 import { QuickActionCard } from "../components/QuickActionCard";
 import { Screen } from "../components/Screen";
 import { colors, radii, spacing, typography } from "../constants/theme";
-import { useStudentData } from "../hooks/useStudentData";
+import { useUser } from "../context/UserContext";
+import { useQuery } from "convex/react";
+import { api } from "../convex/_generated/api";
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { student, gpa } = useStudentData();
+  const { nim } = useUser();
+  
+  // Real dynamic student data from Convex
+  const convexStudent = useQuery(api.students.getStudentProfile, { nim: nim || "" });
+  const liveGrades = useQuery(api.students.getMyGrades, { nim: nim || "" });
+
+  const studentName = convexStudent?.name || "Student";
+  const studentMajor = convexStudent?.major || "Computer Science";
+  const studentNim = convexStudent?.nim || nim || "---";
+
+  // GPA Calculation logic simplified for quick display
+  const currentGpa = useMemo(() => {
+    if (!liveGrades || liveGrades.length === 0) return "0.00";
+    let total = 0;
+    liveGrades.forEach(g => {
+        // Mock points if needed or just use A=4, B=3, etc.
+        const points = g.grade === 'A' ? 4 : g.grade === 'B' ? 3 : g.grade === 'C' ? 2 : 1;
+        total += points;
+    });
+    return (total / liveGrades.length).toFixed(2);
+  }, [liveGrades]);
 
   return (
     <Screen>
       <View style={styles.header}>
         <Text style={styles.greeting}>Welcome back,</Text>
-        <Text style={styles.name}>{student.name}</Text>
+        <Text style={styles.name}>{studentName}</Text>
         <Text style={styles.subheader}>Student Information</Text>
       </View>
 
       <Card style={styles.infoCard}>
-        <InfoRow label="Student ID" value={student.id} />
-        <InfoRow label="Major" value={student.major} />
-        <InfoRow label="Semester" value={student.semester.toString()} />
-        <InfoRow label="Total SKS" value={student.totalCredits.toString()} />
+        <InfoRow label="Student ID" value={studentNim} />
+        <InfoRow label="Major" value={studentMajor} />
+        <InfoRow label="Semester" value={"1"} />
+        <InfoRow label="Total SKS" value={"12"} />
         <InfoRow
           label="Academic Status"
-          value={student.status}
+          value={"Active"}
         />
         <View style={styles.gpaChip}>
           <Text style={styles.gpaLabel}>Current GPA (IPK)</Text>
-          <Text style={styles.gpaValue}>{gpa}</Text>
+          <Text style={styles.gpaValue}>{currentGpa}</Text>
         </View>
       </Card>
 

@@ -6,32 +6,36 @@ import { Card } from '../../components/Card';
 import { Screen } from '../../components/Screen';
 import { colors, radii, spacing, typography } from '../../constants/theme';
 
-type Status = 'pending' | 'verified' | 'rejected';
+import { useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+import { useLocalSearchParams } from 'expo-router';
+
+type Status = 'Pending' | 'Verified' | 'rejected';
 
 export default function VerificationScreen() {
     const router = useRouter();
-    const [status, setStatus] = useState<Status>('pending');
+    const { id } = useLocalSearchParams();
+    
+    // Fetch live status from database
+    const applicant = useQuery(api.students.getApplicantById, { id: (id as string) || "" });
+    const status = applicant?.status as Status || 'Pending';
 
-    // Simulate an automatic verification process by the admin system
     useEffect(() => {
-        const timer = setTimeout(() => {
-            // For demo purposes, we automatically simulate a succesful verification 
-            // after 3 seconds of pending state
-            setStatus('verified');
-
-            // Auto-redirect to success screen after 2 more seconds showing verified
-            setTimeout(() => {
-                router.replace('/pmb/success');
+        if (status === 'Verified') {
+            // Auto-redirect to success screen when admin approves
+            const timer = setTimeout(() => {
+                router.replace({
+                    pathname: '/pmb/success',
+                    params: { nim: applicant?.nim, name: applicant?.name }
+                });
             }, 2000);
-
-        }, 3000);
-
-        return () => clearTimeout(timer);
-    }, []);
+            return () => clearTimeout(timer);
+        }
+    }, [status, applicant]);
 
     const renderStatusContent = () => {
         switch (status) {
-            case 'pending':
+            case 'Pending':
                 return (
                     <>
                         <ActivityIndicator size="large" color={colors.primarySoft} style={styles.spinner} />
@@ -39,9 +43,15 @@ export default function VerificationScreen() {
                         <Text style={styles.statusDesc}>
                             Your documents have been submitted and are currently being reviewed by our admission officers. Please do not close this page.
                         </Text>
+                        <TouchableOpacity 
+                            style={[styles.retryButton, { marginTop: spacing.xl }]} 
+                            onPress={() => router.replace('/')}
+                        >
+                            <Text style={styles.retryText}>Back to Home (Admin Access)</Text>
+                        </TouchableOpacity>
                     </>
                 );
-            case 'verified':
+            case 'Verified':
                 return (
                     <>
                         <View style={[styles.iconBox, { backgroundColor: colors.accent + '20' }]}>

@@ -15,14 +15,20 @@ import { Card } from "../components/Card";
 import { Screen } from "../components/Screen";
 import { colors, radii, spacing, typography } from "../constants/theme";
 
-const VALID_NIM = "221234567";
+import { useQuery } from "convex/react";
+import { api } from "../convex/_generated/api";
+import { useUser } from "../context/UserContext";
+
 const VALID_PASSWORD = "password123";
 
 export default function LoginScreen() {
     const router = useRouter();
+    const { setNim: setLoginNim } = useUser();
     const [nim, setNim] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+
+    const students = useQuery(api.admin.getStudents);
 
     const handleLogin = () => {
         if (!nim || !password) {
@@ -30,11 +36,23 @@ export default function LoginScreen() {
             return;
         }
 
-        if (nim === VALID_NIM && password === VALID_PASSWORD) {
+        // Hardcoded support for the original demo account
+        if (nim === "221234567" && password === VALID_PASSWORD) {
             setError("");
+            setLoginNim(nim);
+            router.replace("/dashboard");
+            return;
+        }
+
+        // Check against dynamic students from database
+        const student = students?.find(s => s.nim === nim);
+
+        if (student && password === VALID_PASSWORD) {
+            setError("");
+            setLoginNim(nim);
             router.replace("/dashboard");
         } else {
-            setError("Invalid credentials. Try NIM 221234567 and password password123.");
+            setError("Invalid credentials. Please use your assigned NIM and 'password123'.");
         }
     };
 
@@ -109,7 +127,7 @@ export default function LoginScreen() {
                     </TouchableOpacity>
 
                     <Text style={styles.hintText}>
-                        Demo credentials: NIM {VALID_NIM}, password {VALID_PASSWORD}
+                        Demo password: {VALID_PASSWORD}
                     </Text>
                 </Card>
             </KeyboardAvoidingView>

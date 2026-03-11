@@ -29,16 +29,13 @@ export const getMyConsultations = query({
 
 // Submit a new consultation request (Jiba's side writes to your admin panel)
 export const requestConsultation = mutation({
-    args: {
-        studentName: v.string(),
-        topic: v.string(),
-        date: v.string(),
-    },
+    args: { studentName: v.string(), topic: v.string(), date: v.string(), message: v.string() },
     handler: async (ctx, args) => {
         return await ctx.db.insert("consultations", {
             studentName: args.studentName,
             topic: args.topic,
             date: args.date,
+            message: args.message,
             status: "Pending",
         });
     }
@@ -69,5 +66,18 @@ export const getStudentProfile = query({
             .query("students")
             .filter((q) => q.eq(q.field("nim"), args.nim))
             .unique();
+    }
+});
+// Get applicant details (to track verification status)
+export const getApplicantById = query({
+    args: { id: v.string() },
+    handler: async (ctx, args) => {
+        try {
+            const applicantId = ctx.db.normalizeId("applicants", args.id);
+            if (!applicantId) return null;
+            return await ctx.db.get(applicantId);
+        } catch (e) {
+            return null;
+        }
     }
 });
