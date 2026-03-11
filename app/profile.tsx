@@ -1,12 +1,12 @@
-import React from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Screen } from "../components/Screen";
+import { useQuery } from "convex/react";
+import { useRouter } from "expo-router";
+import React from "react";
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Card } from "../components/Card";
 import { InfoRow } from "../components/InfoRow";
+import { Screen } from "../components/Screen";
 import { useUser } from "../context/UserContext";
-import { useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { colors, radii, spacing, typography } from "../constants/theme";
 
@@ -29,33 +29,48 @@ export default function ProfileScreen() {
     ]);
   };
 
+  if (student === undefined) {
+    return (
+      <Screen>
+        <ActivityIndicator size="large" color={colors.primarySoft} style={{ marginTop: 100 }} />
+      </Screen>
+    );
+  }
+
+  const displayStudent = student || {
+    name: "New Student",
+    nim: nim || "---",
+    major: "Not Assigned",
+    year: "2024"
+  };
+
   return (
     <Screen>
       <View style={styles.header}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
-            {student?.name
-              ? student.name
+            {displayStudent.name
+              ? displayStudent.name
                   .split(" ")
-                  .map((part) => part[0])
+                  .map((part: string) => part[0])
                   .join("")
                   .toUpperCase()
               : "ST"}
           </Text>
         </View>
-        <Text style={styles.name}>{student?.name || "Student"}</Text>
-        <Text style={styles.id}>{student?.nim || nim || "---"}</Text>
+        <Text style={styles.name}>{displayStudent.name}</Text>
+        <Text style={styles.id}>NIM: {displayStudent.nim}</Text>
       </View>
 
       <Card style={styles.infoCard}>
-        <InfoRow label="Email" value={"student@university.ac.id"} />
-        <InfoRow label="Major" value={student?.major || "Computer Science"} />
-        <InfoRow label="Semester" value={"1"} />
+        <InfoRow label="Major" value={displayStudent.major} />
+        <InfoRow label="Batch Year" value={displayStudent.year || "2024"} />
+        <InfoRow label="Academic Status" value="Verified Student" />
       </Card>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Ionicons name="log-out-outline" size={18} color={colors.text} />
-        <Text style={styles.logoutText}>Logout</Text>
+        <Text style={styles.logoutText}>Logout from UNNEX</Text>
       </TouchableOpacity>
     </Screen>
   );
@@ -65,6 +80,7 @@ const styles = StyleSheet.create({
   header: {
     alignItems: "center",
     marginBottom: spacing.xl,
+    marginTop: spacing.xl,
   },
   avatar: {
     width: 84,
@@ -98,16 +114,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: spacing.sm,
-    backgroundColor: colors.cardSoft,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
     borderRadius: radii.md,
     paddingVertical: spacing.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.border,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.2)',
   },
   logoutText: {
-    color: colors.text,
+    color: colors.danger,
     fontSize: typography.body,
     fontWeight: "600",
   },
 });
-

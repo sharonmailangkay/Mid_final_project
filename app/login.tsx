@@ -26,6 +26,7 @@ export default function LoginScreen() {
     const { setNim: setLoginNim } = useUser();
     const [nim, setNim] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
 
     const students = useQuery(api.admin.getStudents);
@@ -45,7 +46,7 @@ export default function LoginScreen() {
         }
 
         // Check against dynamic students from database
-        const student = students?.find(s => s.nim === nim);
+        const student = students?.find(s => s.nim === nim.trim());
 
         if (student && password === VALID_PASSWORD) {
             setError("");
@@ -112,10 +113,20 @@ export default function LoginScreen() {
                                 value={password}
                                 onChangeText={setPassword}
                                 placeholder="Enter your password"
-                                placeholderTextColor="#94A3B8"
-                                secureTextEntry
+                                placeholderTextColor={colors.textSecondary}
+                                secureTextEntry={!showPassword}
                                 style={styles.input}
                             />
+                            <TouchableOpacity
+                                onPress={() => setShowPassword(!showPassword)}
+                                style={{ paddingRight: spacing.md }}
+                            >
+                                <Ionicons
+                                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                                    size={18}
+                                    color={colors.textSecondary}
+                                />
+                            </TouchableOpacity>
                         </View>
                     </View>
 

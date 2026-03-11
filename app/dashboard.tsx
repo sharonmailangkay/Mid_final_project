@@ -1,13 +1,14 @@
+import { useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import React, { useMemo } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { Card } from "../components/Card";
 import { InfoRow } from "../components/InfoRow";
 import { QuickActionCard } from "../components/QuickActionCard";
 import { Screen } from "../components/Screen";
+import { gradeToPoint } from "../constants/data";
 import { colors, radii, spacing, typography } from "../constants/theme";
 import { useUser } from "../context/UserContext";
-import { useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 
 export default function DashboardScreen() {
@@ -15,44 +16,51 @@ export default function DashboardScreen() {
   const { nim } = useUser();
   
   // Real dynamic student data from Convex
-  const convexStudent = useQuery(api.students.getStudentProfile, { nim: nim || "" });
-  const liveGrades = useQuery(api.students.getMyGrades, { nim: nim || "" });
+  const student = useQuery(api.students.getStudentProfile, { nim: nim || "" });
+  const grades = useQuery(api.students.getMyGrades, { nim: nim || "" });
 
-  const studentName = convexStudent?.name || "Student";
-  const studentMajor = convexStudent?.major || "Computer Science";
-  const studentNim = convexStudent?.nim || nim || "---";
-
-  // GPA Calculation logic simplified for quick display
   const currentGpa = useMemo(() => {
-    if (!liveGrades || liveGrades.length === 0) return "0.00";
-    let total = 0;
-    liveGrades.forEach(g => {
-        // Mock points if needed or just use A=4, B=3, etc.
-        const points = g.grade === 'A' ? 4 : g.grade === 'B' ? 3 : g.grade === 'C' ? 2 : 1;
-        total += points;
+    if (!grades || grades.length === 0) return "0.00";
+    let totalPoints = 0;
+    grades.forEach(g => {
+      totalPoints += gradeToPoint(g.grade);
     });
-    return (total / liveGrades.length).toFixed(2);
-  }, [liveGrades]);
+    return (totalPoints / grades.length).toFixed(2);
+  }, [grades]);
+
+  if (student === undefined) {
+    return (
+      <Screen>
+        <ActivityIndicator size="large" color={colors.primarySoft} style={{ marginTop: 100 }} />
+      </Screen>
+    );
+  }
+
+  const displayStudent = student || {
+    name: "New Student",
+    nim: nim || "---",
+    major: "Guest",
+    year: "2024"
+  };
 
   return (
     <Screen>
       <View style={styles.header}>
         <Text style={styles.greeting}>Welcome back,</Text>
-        <Text style={styles.name}>{studentName}</Text>
-        <Text style={styles.subheader}>Student Information</Text>
+        <Text style={styles.name}>{displayStudent.name}</Text>
+        <Text style={styles.subheader}>Student Information (Live Data)</Text>
       </View>
 
       <Card style={styles.infoCard}>
-        <InfoRow label="Student ID" value={studentNim} />
-        <InfoRow label="Major" value={studentMajor} />
-        <InfoRow label="Semester" value={"1"} />
-        <InfoRow label="Total SKS" value={"12"} />
+        <InfoRow label="Student ID" value={displayStudent.nim} />
+        <InfoRow label="Major" value={displayStudent.major} />
+        <InfoRow label="Batch" value={displayStudent.year || "2024"} />
         <InfoRow
           label="Academic Status"
-          value={"Active"}
+          value="Active Student"
         />
         <View style={styles.gpaChip}>
-          <Text style={styles.gpaLabel}>Current GPA (IPK)</Text>
+          <Text style={styles.gpaLabel}>Current GPA (IPS)</Text>
           <Text style={styles.gpaValue}>{currentGpa}</Text>
         </View>
       </Card>
@@ -61,37 +69,25 @@ export default function DashboardScreen() {
 
       <QuickActionCard
         title="Academic Consultation"
-        subtitle="Discuss with your lecturer, kaprodi, or dean"
+        subtitle="Discuss with your lecturer"
         icon="chatbubbles-outline"
         onPress={() => router.push("/consultation")}
       />
       <QuickActionCard
-        title="Study Plan (KRS)"
-        subtitle="Manage your courses for this semester"
-        icon="book-outline"
-        onPress={() => router.push("/krs")}
-      />
-      <QuickActionCard
-        title="Course Schedule"
-        subtitle="View your weekly timetable"
-        icon="calendar-outline"
-        onPress={() => router.push("/schedule")}
-      />
-      <QuickActionCard
         title="Grades & Performance"
-        subtitle="See your course grades & IPS/IPK"
+        subtitle="See your course grades from Admin"
         icon="stats-chart-outline"
         onPress={() => router.push("/grades")}
       />
       <QuickActionCard
-        title="Attendance"
-        subtitle="Track your attendance status"
-        icon="checkmark-done-outline"
-        onPress={() => router.push("/attendance")}
+        title="Study Plan (KRS)"
+        subtitle="View your assigned courses"
+        icon="book-outline"
+        onPress={() => router.push("/krs")}
       />
       <QuickActionCard
         title="Profile"
-        subtitle="View your personal information"
+        subtitle="View your permanent academic profile"
         icon="person-circle-outline"
         onPress={() => router.push("/profile")}
       />
@@ -147,4 +143,3 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
 });
-

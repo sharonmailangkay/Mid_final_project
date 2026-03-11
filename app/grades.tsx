@@ -1,10 +1,10 @@
+import { useQuery } from "convex/react";
 import React, { useMemo } from "react";
-import { FlatList, StyleSheet, Text, View, ActivityIndicator } from "react-native";
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
 import { Card } from "../components/Card";
 import { Screen } from "../components/Screen";
 import { gradeToPoint } from "../constants/data";
 import { colors, radii, spacing, typography } from "../constants/theme";
-import { useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { useUser } from "../context/UserContext";
 
@@ -15,13 +15,13 @@ export default function GradesScreen() {
   // Dynamic GPA Calculation
   const semesterGPA = useMemo(() => {
     if (!liveGrades || liveGrades.length === 0) return "0.00";
-    
+
     let totalPoints = 0;
     // Assuming each course is 3 credits for simple calculation if credits field is missing in schema
     liveGrades.forEach(g => {
       totalPoints += gradeToPoint(g.grade);
     });
-    
+
     return (totalPoints / liveGrades.length).toFixed(2);
   }, [liveGrades]);
 
@@ -150,4 +150,3 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 });
-

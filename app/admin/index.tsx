@@ -10,6 +10,7 @@ export default function AdminLoginScreen() {
     const router = useRouter();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -25,7 +26,7 @@ export default function AdminLoginScreen() {
         // Simulate login
         setTimeout(() => {
             setLoading(false);
-            if (username === 'admin' && password === 'admin') {
+            if (username.trim().toLowerCase() === 'admin' && password.trim() === 'admin') {
                 router.replace('/admin/dashboard');
             } else {
                 setError('Invalid username or password. (Hint: admin/admin)');
@@ -81,16 +82,28 @@ export default function AdminLoginScreen() {
                         />
 
                         <Text style={styles.label}>Password</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={password}
-                            onChangeText={setPassword}
-                            placeholder="Enter password"
-                            placeholderTextColor={colors.textSecondary}
-                            secureTextEntry
-                            returnKeyType="done"
-                            onSubmitEditing={handleLogin}
-                        />
+                        <View style={styles.passwordContainer}>
+                            <TextInput
+                                style={styles.passwordInput}
+                                value={password}
+                                onChangeText={setPassword}
+                                placeholder="Enter password"
+                                placeholderTextColor={colors.textSecondary}
+                                secureTextEntry={!showPassword}
+                                returnKeyType="done"
+                                onSubmitEditing={handleLogin}
+                            />
+                            <TouchableOpacity
+                                style={styles.eyeIcon}
+                                onPress={() => setShowPassword(!showPassword)}
+                            >
+                                <Ionicons
+                                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                                    size={20}
+                                    color={colors.textSecondary}
+                                />
+                            </TouchableOpacity>
+                        </View>
 
                         <TouchableOpacity
                             style={[styles.loginButton, loading && styles.loginButtonDisabled]}
@@ -206,6 +219,24 @@ const styles = StyleSheet.create({
         color: colors.text,
         fontSize: typography.body,
         marginBottom: spacing.lg,
+    },
+    passwordContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.inputBackground,
+        borderWidth: 1,
+        borderColor: colors.border,
+        borderRadius: radii.md,
+        marginBottom: spacing.lg,
+    },
+    passwordInput: {
+        flex: 1,
+        padding: spacing.md,
+        color: colors.text,
+        fontSize: typography.body,
+    },
+    eyeIcon: {
+        paddingHorizontal: spacing.md,
     },
     loginButton: {
         backgroundColor: '#10B981',

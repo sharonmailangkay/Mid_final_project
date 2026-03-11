@@ -5,8 +5,6 @@ import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native
 import { Card } from '../../components/Card';
 import { Screen } from '../../components/Screen';
 import { colors, radii, spacing, typography } from '../../constants/theme';
-import { useConsultations } from '../../context/ConsultationContext';
-
 import { useUser } from '../../context/UserContext';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
