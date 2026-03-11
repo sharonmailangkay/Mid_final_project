@@ -39,7 +39,7 @@ export default function LoginScreen() {
     };
 
     return (
-        <Screen>
+        <Screen containerStyle={styles.screen}>
             <KeyboardAvoidingView
                 style={styles.flex}
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -58,7 +58,7 @@ export default function LoginScreen() {
                     </Text>
                 </View>
 
-                <Card>
+                <Card style={styles.card}>
                     <Text style={styles.cardTitle}>Student Login</Text>
 
                     <View style={styles.fieldContainer}>
@@ -67,14 +67,14 @@ export default function LoginScreen() {
                             <Ionicons
                                 name="id-card-outline"
                                 size={18}
-                                color={colors.textSecondary}
+                                color="#64748B"
                                 style={styles.inputIcon}
                             />
                             <TextInput
                                 value={nim}
                                 onChangeText={setNim}
                                 placeholder="Enter your NIM"
-                                placeholderTextColor={colors.textSecondary}
+                                placeholderTextColor="#94A3B8"
                                 keyboardType="number-pad"
                                 style={styles.input}
                             />
@@ -87,14 +87,14 @@ export default function LoginScreen() {
                             <Ionicons
                                 name="lock-closed-outline"
                                 size={18}
-                                color={colors.textSecondary}
+                                color="#64748B"
                                 style={styles.inputIcon}
                             />
                             <TextInput
                                 value={password}
                                 onChangeText={setPassword}
                                 placeholder="Enter your password"
-                                placeholderTextColor={colors.textSecondary}
+                                placeholderTextColor="#94A3B8"
                                 secureTextEntry
                                 style={styles.input}
                             />
@@ -105,7 +105,7 @@ export default function LoginScreen() {
 
                     <TouchableOpacity style={styles.button} onPress={handleLogin}>
                         <Text style={styles.buttonText}>Login</Text>
-                        <Ionicons name="arrow-forward" size={18} color={colors.text} />
+                        <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
                     </TouchableOpacity>
 
                     <Text style={styles.hintText}>
@@ -118,6 +118,9 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
+    screen: {
+        backgroundColor: "#F8FAFC", // Soft slate-white background
+    },
     flex: {
         flex: 1,
         justifyContent: "center",
@@ -136,17 +139,29 @@ const styles = StyleSheet.create({
         height: "100%",
     },
     title: {
-        color: colors.text,
+        color: "#0F172A", // Deep slate title
         fontSize: typography.title,
         fontWeight: "700",
         marginBottom: spacing.sm,
     },
     subtitle: {
-        color: colors.textSecondary,
+        color: "#64748B", // Muted slate subtitle
         fontSize: typography.body,
+        textAlign: "center",
+        paddingHorizontal: spacing.xl,
+    },
+    card: {
+        backgroundColor: "#FFFFFF",
+        borderColor: "#E2E8F0",
+        borderWidth: 1,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 12,
+        elevation: 5,
     },
     cardTitle: {
-        color: colors.text,
+        color: "#0F172A",
         fontSize: typography.subtitle,
         fontWeight: "600",
         marginBottom: spacing.lg,
@@ -155,17 +170,18 @@ const styles = StyleSheet.create({
         marginBottom: spacing.md,
     },
     label: {
-        color: colors.textSecondary,
+        color: "#475569",
         fontSize: typography.small,
+        fontWeight: "500",
         marginBottom: spacing.xs,
     },
     inputWrapper: {
         flexDirection: "row",
         alignItems: "center",
         borderRadius: radii.md,
-        backgroundColor: colors.inputBackground,
-        borderWidth: StyleSheet.hairlineWidth,
-        borderColor: colors.border,
+        backgroundColor: "#F1F5F9",
+        borderWidth: 1,
+        borderColor: "#E2E8F0",
     },
     inputIcon: {
         marginLeft: spacing.md,
@@ -175,7 +191,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingVertical: spacing.sm + 2,
         paddingRight: spacing.md,
-        color: colors.text,
+        color: "#0F172A",
         fontSize: typography.body,
     },
     errorText: {
@@ -186,21 +202,26 @@ const styles = StyleSheet.create({
     },
     button: {
         marginTop: spacing.md,
-        backgroundColor: colors.primary,
+        backgroundColor: "#2563EB", // Vibrant professional blue
         borderRadius: radii.md,
         paddingVertical: spacing.md,
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
         gap: spacing.sm,
+        shadowColor: "#2563EB",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
     },
     buttonText: {
-        color: colors.text,
+        color: "#FFFFFF",
         fontSize: typography.body,
         fontWeight: "600",
     },
     hintText: {
-        color: colors.textSecondary,
+        color: "#94A3B8",
         fontSize: typography.small,
         marginTop: spacing.md,
         textAlign: "center",

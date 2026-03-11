@@ -44,6 +44,16 @@ export default function PMBInfoScreen() {
                     </View>
                 </Card>
 
+                {/* Department Info Button */}
+                <TouchableOpacity
+                    style={styles.infoButton}
+                    onPress={() => router.push('/pmb/departments')}
+                    activeOpacity={0.8}
+                >
+                    <Ionicons name="list" size={20} color={colors.primary} />
+                    <Text style={styles.infoButtonText}>Lihat Informasi Jurusan</Text>
+                </TouchableOpacity>
+
                 {/* Action Button */}
                 <TouchableOpacity
                     style={styles.applyButton}
@@ -145,5 +155,22 @@ const styles = StyleSheet.create({
         color: colors.textSecondary,
         fontSize: typography.body,
         fontWeight: '600',
+    },
+    infoButton: {
+        backgroundColor: colors.card,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 16,
+        borderRadius: radii.lg,
+        gap: spacing.sm,
+        marginBottom: spacing.md,
+        borderWidth: 1,
+        borderColor: colors.primaryMuted,
+    },
+    infoButtonText: {
+        color: colors.primary,
+        fontSize: typography.body,
+        fontWeight: '700',
     },
 });
